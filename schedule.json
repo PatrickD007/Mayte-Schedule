@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-03T00:00:00Z",
+  "updatedAt": "2026-09-04T00:00:00Z",
   "entries": [
     {
       "id": "2026-09-04-r1",
@@ -60,7 +60,7 @@
       "date": "2026-09-20",
       "kind": "turnover",
       "room": "2",
-      "tag": null,
+      "tag": "cancelled",
       "oldDate": null,
       "icalUid": "FAKE-TEST-UID-DOES-NOT-EXIST-ON-REAL-FEED"
     },
