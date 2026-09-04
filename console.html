@@ -104,6 +104,24 @@
   .history-text{white-space:pre-wrap; color:var(--muted); flex:1}
 
   .howto{font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.5}
+
+  .cal-room-label{display:flex; align-items:center; gap:10px; margin:0 0 10px}
+  .cal-room-label:not(:first-child){margin-top:22px}
+  .cal-room-label .name{font-weight:700; font-size:14px}
+  .cal-month{margin-bottom:16px}
+  .cal-month-label{font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
+  .cal-dow{font-size:10px; text-align:center; color:var(--muted); font-weight:700; padding-bottom:2px}
+  .cal-cell{aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12.5px; border-radius:7px; background:var(--surface); border:1px solid var(--line); color:var(--muted)}
+  .cal-cell.cal-empty{border:none; background:transparent}
+  .cal-cell.occ-r1{background:var(--room1-bg); color:var(--room1); font-weight:800; border-color:transparent}
+  .cal-cell.occ-r2{background:var(--room2-bg); color:var(--room2); font-weight:800; border-color:transparent}
+  .cal-cell.occ-r4{background:var(--room4-bg); color:var(--room4); font-weight:800; border-color:transparent}
+  .cal-cell.cal-today{box-shadow:0 0 0 2px var(--ink) inset}
+  .cal-cell.tag-new{box-shadow:0 0 0 2px var(--new) inset}
+  .cal-cell.tag-update{box-shadow:0 0 0 2px var(--update) inset}
+  .cal-cell.tag-cancelled{box-shadow:0 0 0 2px var(--cancelled) inset}
+
   footer{margin-top:32px; font-size:12px; color:var(--muted); text-align:center}
 </style>
 </head>
@@ -134,6 +152,9 @@
 
   <h2>Schedule</h2>
   <div class="card"><div class="list" id="scheduleList"><div class="empty">Loading…</div></div></div>
+
+  <h2>Room Calendars</h2>
+  <div class="card"><div id="calendars"></div></div>
 
   <h2>History</h2>
   <div class="card"><div id="historyList"><div class="empty">Nothing sent yet.</div></div></div>
@@ -190,6 +211,60 @@ function generateMessage(entries){
   return `${generateHeadline(entries)}\n\nSo we have:\n${body}\n\nFull schedule: ${location.origin}${location.pathname.replace(/console\.html$/, "index.html")}`;
 }
 
+const ROOM_NAMES = {"1": "Peaceful Room", "2": "Primary Suite", "4": "Peaceful Suite"};
+
+function monthGrid(year, monthIdx){
+  const startDow = new Date(year, monthIdx, 1).getDay();
+  const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+  const cells = Array(startDow).fill(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return cells;
+}
+function isoDate(year, monthIdx, day){
+  return `${year}-${String(monthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function buildRoomCalendarHTML(room, occupied, allBookings, monthsToShow){
+  const today = new Date();
+  const todayIso = today.toISOString().slice(0, 10);
+  let html = "";
+  for (let i = 0; i < monthsToShow; i++){
+    const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    const year = d.getFullYear(), monthIdx = d.getMonth();
+    html += `<div class="cal-month"><div class="cal-month-label">${d.toLocaleDateString(undefined, {month: "long", year: "numeric"})}</div><div class="cal-grid">`;
+    ["S","M","T","W","T","F","S"].forEach(w => html += `<div class="cal-dow">${w}</div>`);
+    for (const day of monthGrid(year, monthIdx)){
+      if (day === null){ html += `<div class="cal-cell cal-empty"></div>`; continue; }
+      const iso = isoDate(year, monthIdx, day);
+      const isOccupied = occupied.some(b => iso >= b.checkIn && iso < b.date);
+      const checkoutHere = allBookings.find(b => b.date === iso);
+      let cls = "cal-cell";
+      if (isOccupied) cls += " occ-r" + room;
+      if (checkoutHere && checkoutHere.tag) cls += " tag-" + checkoutHere.tag;
+      if (iso === todayIso) cls += " cal-today";
+      html += `<div class="${cls}">${day}</div>`;
+    }
+    html += `</div></div>`;
+  }
+  return html;
+}
+
+function renderCalendars(entries){
+  const container = document.getElementById("calendars");
+  container.innerHTML = "";
+  for (const room of ["1", "2", "4"]){
+    const roomBookings = entries.filter(e => e.kind === "turnover" && e.room === room);
+    const occupied = roomBookings.filter(e => e.tag !== "cancelled");
+    const label = document.createElement("div");
+    label.className = "cal-room-label";
+    label.innerHTML = `<span class="chip r${room}">${room}</span><span class="name">${ROOM_NAMES[room]}</span>`;
+    container.appendChild(label);
+    const block = document.createElement("div");
+    block.innerHTML = buildRoomCalendarHTML(room, occupied, roomBookings, 2);
+    container.appendChild(block);
+  }
+}
+
 Promise.all([
   fetch("schedule.json?_=" + Date.now()).then(r => r.json()),
   fetch("history.json?_=" + Date.now()).then(r => r.json()).catch(() => ({sent: []})),
@@ -224,6 +299,8 @@ Promise.all([
     `;
     list.appendChild(row);
   }
+
+  renderCalendars(entries);
 
   const histList = document.getElementById("historyList");
   const sent = [...(hist.sent||[])].sort((a,b) => b.sentAt.localeCompare(a.sentAt));
