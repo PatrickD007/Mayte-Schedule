@@ -17,6 +17,9 @@
     --room1-bg:#DEEAEC; --room2-bg:#F3E7D2; --room4-bg:#EBDDE8;
     --pending:#96650E; --pending-bg:#F2E4C6; --pending-line:#E0C68C;
     --accent:#3B5D50; --accent-ink:#FFFFFF;
+    --bk1-bg:#F5DED6; --bk1-ink:#B5502E; --bk2-bg:#DEE0F0; --bk2-ink:#5A5CC4;
+    --bk3-bg:#EDE7C9; --bk3-ink:#8A7A1E; --bk4-bg:#F0DCE6; --bk4-ink:#A34C74;
+    --bk5-bg:#D8EDEA; --bk5-ink:#227A72;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -30,6 +33,9 @@
       --room1-bg:#233C41; --room2-bg:#3C3222; --room4-bg:#3A2C37;
       --pending:#E6BE6E; --pending-bg:#3D3320; --pending-line:#5A4B2C;
       --accent:#6FA08E; --accent-ink:#16211D;
+      --bk1-bg:#4A2E26; --bk1-ink:#E0977E; --bk2-bg:#2C2E4A; --bk2-ink:#9AA0E0;
+      --bk3-bg:#3D3A22; --bk3-ink:#D6C46A; --bk4-bg:#3D2A34; --bk4-ink:#E0A0C0;
+      --bk5-bg:#223A38; --bk5-ink:#7ED4C9;
     }
   }
   :root[data-theme="dark"]{
@@ -43,6 +49,9 @@
     --room1-bg:#233C41; --room2-bg:#3C3222; --room4-bg:#3A2C37;
     --pending:#E6BE6E; --pending-bg:#3D3320; --pending-line:#5A4B2C;
     --accent:#6FA08E; --accent-ink:#16211D;
+    --bk1-bg:#4A2E26; --bk1-ink:#E0977E; --bk2-bg:#2C2E4A; --bk2-ink:#9AA0E0;
+    --bk3-bg:#3D3A22; --bk3-ink:#D6C46A; --bk4-bg:#3D2A34; --bk4-ink:#E0A0C0;
+    --bk5-bg:#223A38; --bk5-ink:#7ED4C9;
   }
   *{box-sizing:border-box}
   html{background:var(--bg)}
@@ -115,7 +124,7 @@
   .cal-cell{position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12.5px; border-radius:7px; background:var(--surface); border:1px solid var(--line); color:var(--muted)}
   .cal-cell.cal-empty{border:none; background:transparent}
   .cal-cell.cal-out{opacity:.32}
-  .cal-cell.occ{color:var(--ink); font-weight:800; border-color:transparent}
+  .cal-cell.occ{font-weight:800; border-color:transparent}
   .cal-cell.cal-today{box-shadow:0 0 0 2px var(--ink) inset}
   .cal-cell.tag-new{box-shadow:0 0 0 2px var(--new) inset}
   .cal-cell.tag-update{box-shadow:0 0 0 2px var(--update) inset}
@@ -224,9 +233,10 @@ function isoDate(year, monthIdx, day){
   return `${year}-${String(monthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function bookingColor(room, index){
-  const pct = 16 + (index % 4) * 12; // 16, 28, 40, 52 -- distinct tints of this room's own hue
-  return `color-mix(in srgb, var(--room${room}) ${pct}%, var(--surface))`;
+const BOOKING_PALETTE = ["bk1", "bk2", "bk3", "bk4", "bk5"];
+function bookingColorVars(index){
+  const k = BOOKING_PALETTE[index % BOOKING_PALETTE.length];
+  return `background:var(--${k}-bg); color:var(--${k}-ink);`;
 }
 
 function buildRoomCalendarHTML(room, occupied, allBookings, gcDates, windowDays){
@@ -256,7 +266,7 @@ function buildRoomCalendarHTML(room, occupied, allBookings, gcDates, windowDays)
         cls += " cal-out";
       } else {
         const bookingIdx = sortedOccupied.findIndex(b => iso >= b.checkIn && iso < b.date);
-        if (bookingIdx !== -1){ cls += " occ"; style = ` style="background:${bookingColor(room, bookingIdx)}"`; }
+        if (bookingIdx !== -1){ cls += " occ"; style = ` style="${bookingColorVars(bookingIdx)}"`; }
         const checkoutHere = allBookings.find(b => b.date === iso);
         if (checkoutHere && checkoutHere.tag) cls += " tag-" + checkoutHere.tag;
       }
