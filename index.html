@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tranquility Base Schedule</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#F3EFE7; --surface:#FFFFFF; --surface-2:#EDE7DA;
+    --ink:#2A2520; --muted:#746C60; --line:#DED5C4;
+    --room1:#1F7A8C; --room2:#B8791A; --room4:#7A3B6D;
+    --gc:#5B6B73; --off:#8A8378; --gc-bg:#E7E2D8; --off-bg:#E9E4DA;
+    --new:#3F7A4E; --new-bg:#E4EFE3;
+    --update:#35507A; --update-bg:#E3E8F0;
+    --cancelled:#A6402F; --cancelled-bg:#F3E3DF;
+    --room1-bg:#DEEAEC; --room2-bg:#F3E7D2; --room4-bg:#EBDDE8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1E1A16; --surface:#2A2520; --surface-2:#332D26;
+      --ink:#F2EEE6; --muted:#B3AA9C; --line:#453D33;
+      --room1:#5BB6C7; --room2:#E0A63E; --room4:#B879AA;
+      --gc:#9AA9B0; --off:#B0A996; --gc-bg:#333B3F; --off-bg:#3A362D;
+      --new:#79C08C; --new-bg:#2C3B2E;
+      --update:#8AA6D6; --update-bg:#2A3245;
+      --cancelled:#E08A78; --cancelled-bg:#402A26;
+      --room1-bg:#233C41; --room2-bg:#3C3222; --room4-bg:#3A2C37;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1E1A16; --surface:#2A2520; --surface-2:#332D26;
+    --ink:#F2EEE6; --muted:#B3AA9C; --line:#453D33;
+    --room1:#5BB6C7; --room2:#E0A63E; --room4:#B879AA;
+    --gc:#9AA9B0; --off:#B0A996; --gc-bg:#333B3F; --off-bg:#3A362D;
+    --new:#79C08C; --new-bg:#2C3B2E;
+    --update:#8AA6D6; --update-bg:#2A3245;
+    --cancelled:#E08A78; --cancelled-bg:#402A26;
+    --room1-bg:#233C41; --room2-bg:#3C3222; --room4-bg:#3A2C37;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg)}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Public Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:520px; margin:0 auto; padding:20px 18px 48px}
+  header{padding:8px 0 18px}
+  .house{font-size:22px; font-weight:800; letter-spacing:-0.01em}
+  .sub{font-size:14px; color:var(--muted); margin-top:2px}
+
+  .legend{
+    display:flex; gap:8px; margin:18px 0 22px;
+  }
+  .door{
+    flex:1; border-radius:14px; padding:10px 6px; text-align:center;
+    border:1px solid var(--line);
+  }
+  .door .num{font-size:20px; font-weight:800; line-height:1}
+  .door .name{font-size:10.5px; margin-top:4px; color:var(--muted); line-height:1.2}
+  .door.r1{background:var(--room1-bg)} .door.r1 .num{color:var(--room1)}
+  .door.r2{background:var(--room2-bg)} .door.r2 .num{color:var(--room2)}
+  .door.r4{background:var(--room4-bg)} .door.r4 .num{color:var(--room4)}
+  .door.r3{opacity:.55}
+  .door.r3 .num{color:var(--muted)}
+
+  .hero{
+    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    padding:18px; margin-bottom:22px;
+  }
+  .hero .eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700}
+  .hero .row{display:flex; align-items:baseline; gap:12px; margin-top:8px}
+  .hero .date{font-size:34px; font-weight:800; letter-spacing:-0.02em}
+  .hero .chip{margin-top:2px}
+
+  .section-label{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700; margin:0 0 10px 2px}
+
+  .list{display:flex; flex-direction:column; gap:8px}
+  .item{
+    display:flex; align-items:center; gap:12px;
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:12px 14px;
+  }
+  .item .date{
+    font-size:17px; font-weight:700; width:44px; flex:0 0 auto;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:14px; font-weight:800; padding:5px 11px; border-radius:999px;
+    flex:0 0 auto;
+  }
+  .chip.r1{background:var(--room1-bg); color:var(--room1)}
+  .chip.r2{background:var(--room2-bg); color:var(--room2)}
+  .chip.r4{background:var(--room4-bg); color:var(--room4)}
+  .chip.gc{background:var(--gc-bg); color:var(--gc)}
+  .chip.off{background:var(--off-bg); color:var(--off)}
+
+  .tag{
+    margin-left:auto; font-size:11px; font-weight:800; letter-spacing:.03em;
+    padding:4px 9px; border-radius:999px; flex:0 0 auto;
+  }
+  .tag.new{background:var(--new-bg); color:var(--new)}
+  .tag.update{background:var(--update-bg); color:var(--update)}
+  .tag.cancelled{background:var(--cancelled-bg); color:var(--cancelled)}
+
+  .item.is-cancelled .date, .item.is-cancelled .chip{
+    text-decoration: line-through; text-decoration-thickness: 2px; opacity:.6;
+  }
+  .old-date{ text-decoration:line-through; opacity:.55; font-weight:600; font-size:13px; margin-right:2px}
+
+  footer{margin-top:28px; font-size:12.5px; color:var(--muted); text-align:center; line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="house">🧹 Tranquility Base</div>
+    <div class="sub">Cleaning &amp; changeover schedule</div>
+  </header>
+
+  <div class="legend">
+    <div class="door r1"><div class="num">1</div><div class="name">Peaceful Room</div></div>
+    <div class="door r2"><div class="num">2</div><div class="name">Primary Suite</div></div>
+    <div class="door r3"><div class="num">3</div><div class="name">storage</div></div>
+    <div class="door r4"><div class="num">4</div><div class="name">Peaceful Suite</div></div>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow">Next visit</div>
+    <div class="row">
+      <div class="date">9/4</div>
+      <span class="chip r1">1</span>
+    </div>
+  </div>
+
+  <div class="section-label">Upcoming</div>
+  <div class="list">
+    <div class="item"><div class="date">9/7</div><span class="chip r1">1</span></div>
+    <div class="item"><div class="date">9/9</div><span class="chip r2">2</span></div>
+    <div class="item"><div class="date">9/13</div><span class="chip r2">2</span></div>
+    <div class="item"><div class="date">9/15</div><span class="chip r1">1</span></div>
+    <div class="item"><div class="date">9/16</div><span class="chip gc">GC</span></div>
+    <div class="item"><div class="date">9/30</div><span class="chip gc">GC</span></div>
+    <div class="item"><div class="date">10/14</div><span class="chip gc">GC</span></div>
+    <div class="item"><div class="date">10/19</div><span class="chip r2">2</span></div>
+    <div class="item"><div class="date">10/28</div><span class="chip gc">GC</span></div>
+  </div>
+
+  <footer>
+    Updated by Patrick · questions, just text him
+  </footer>
+</div>
+</body>
+</html>
