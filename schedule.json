@@ -51,8 +51,8 @@
       "date": "2026-10-19",
       "kind": "turnover",
       "room": "2",
-      "tag": null,
-      "oldDate": null,
+      "tag": "update",
+      "oldDate": "2026-09-05",
       "icalUid": "1418fb94e984-5b9cc60477e9f68f8b8994078d4c2160@airbnb.com"
     },
     {
