@@ -62,6 +62,16 @@
   h2{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700; margin:28px 0 10px 2px}
   h2:first-of-type{margin-top:0}
 
+  .legend{display:flex; gap:8px; margin:0 0 22px}
+  .door{flex:1; border-radius:14px; padding:10px 6px; text-align:center; border:1px solid var(--line)}
+  .door .num{font-size:20px; font-weight:800; line-height:1}
+  .door .name{font-size:10.5px; margin-top:4px; color:var(--muted); line-height:1.2}
+  .door.r1{background:var(--room1-bg)} .door.r1 .num{color:var(--room1)}
+  .door.r2{background:var(--room2-bg)} .door.r2 .num{color:var(--room2)}
+  .door.r4{background:var(--room4-bg)} .door.r4 .num{color:var(--room4)}
+  .door.r3{opacity:.55}
+  .door.r3 .num{color:var(--muted)}
+
   .card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px}
   .draft.has-changes{border-color:var(--pending-line); background:var(--pending-bg)}
   .draft-banner{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:800; color:var(--pending); text-transform:uppercase; letter-spacing:.03em; margin-bottom:10px}
@@ -107,12 +117,19 @@
     <a class="link" href="index.html" target="_blank">View Mayte's page →</a>
   </header>
 
+  <div class="legend">
+    <div class="door r1"><div class="num">1</div><div class="name">Peaceful Room</div></div>
+    <div class="door r2"><div class="num">2</div><div class="name">Primary Suite</div></div>
+    <div class="door r3"><div class="num">3</div><div class="name">storage</div></div>
+    <div class="door r4"><div class="num">4</div><div class="name">Peaceful Suite</div></div>
+  </div>
+
   <h2>Draft to Mayte</h2>
   <div class="card draft" id="draftCard">
     <div class="draft-banner" id="draftBanner" hidden><span class="dot"></span><span id="draftBannerText"></span></div>
     <div class="draft-text" id="draftText">Loading…</div>
-    <button class="primary" id="copyBtn">Copy message</button>
-    <div class="howto">To make a change: tell Claude in chat (e.g. "move the 9/16 GC to 9/18") — it'll update this page directly. Once you've actually sent a message to Mayte, tell Claude "sent it" so it can log it and clear the tags above.</div>
+    <button class="primary" id="copyBtn" hidden>Copy message</button>
+    <div class="howto" id="howto" hidden>To make a change: tell Claude in chat (e.g. "move the 9/16 GC to 9/18") — it'll update this page directly. Once you've actually sent this message to Mayte, tell Claude "sent it" so it can log it and clear these tags.</div>
   </div>
 
   <h2>Schedule</h2>
@@ -141,10 +158,36 @@ function renderLine(e){
   return `- ${line}`;
 }
 
+function roomWord(e){ return e.kind === "gc" ? "General Cleaning" : e.kind === "off" ? "your schedule" : `#${e.room}`; }
+
+function generateHeadline(entries){
+  const changed = entries.filter(e => e.tag);
+  if (!changed.length) return "Hi Mayte! Here's the schedule:";
+
+  if (changed.length === 1){
+    const e = changed[0];
+    if (e.tag === "cancelled") return `Hi Mayte! ${roomWord(e)}'s reservation was cancelled:`;
+    if (e.tag === "new") return e.kind === "turnover" ? `Hi Mayte! A new reservation for ${roomWord(e)}:` : `Hi Mayte! A note about ${roomWord(e)}:`;
+    if (e.tag === "update" && e.oldDate){
+      const verb = e.date > e.oldDate ? "extended" : "shortened";
+      return `Hi Mayte! ${roomWord(e)} ${verb} their reservation:`;
+    }
+    return `Hi Mayte! An update to ${roomWord(e)}:`;
+  }
+
+  const rooms = [...new Set(changed.filter(e => e.kind === "turnover").map(e => `#${e.room}`))];
+  if (rooms.length === 1) return `Hi Mayte! A few updates to ${rooms[0]}:`;
+  if (rooms.length > 1){
+    const last = rooms.pop();
+    return `Hi Mayte! Updates to ${rooms.join(", ")} and ${last}:`;
+  }
+  return "Hi Mayte! A few schedule updates:";
+}
+
 function generateMessage(entries){
   const ordered = [...entries].sort((a,b) => a.date.localeCompare(b.date));
   const body = ordered.map(renderLine).join("\n");
-  return `Hi Mayte! Here's the updated schedule:\n\nSo we have:\n${body}\n\nFull schedule: ${location.origin}${location.pathname.replace(/console\.html$/, "index.html")}`;
+  return `${generateHeadline(entries)}\n\nSo we have:\n${body}\n\nFull schedule: ${location.origin}${location.pathname.replace(/console\.html$/, "index.html")}`;
 }
 
 Promise.all([
@@ -157,11 +200,15 @@ Promise.all([
   const banner = document.getElementById("draftBanner");
   card.classList.toggle("has-changes", hasChanges);
   banner.hidden = !hasChanges;
+  document.getElementById("copyBtn").hidden = !hasChanges;
+  document.getElementById("howto").hidden = !hasChanges;
   if (hasChanges){
     const n = entries.filter(e => e.tag).length;
     document.getElementById("draftBannerText").textContent = `${n} change${n===1?"":"s"} ready to send`;
+    document.getElementById("draftText").textContent = generateMessage(entries);
+  } else {
+    document.getElementById("draftText").textContent = "Nothing new since your last update to Mayte.";
   }
-  document.getElementById("draftText").textContent = entries.length ? generateMessage(entries) : "No schedule entries yet.";
 
   const list = document.getElementById("scheduleList");
   const ordered = [...entries].sort((a,b) => a.date.localeCompare(b.date));
