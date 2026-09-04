@@ -2,7 +2,7 @@ name: Sync Airbnb calendars
 
 on:
   schedule:
-    - cron: "0 * * * *"  # every hour, UTC
+    - cron: "17 * * * *"  # every hour at :17, UTC -- avoids the top-of-hour congestion that most commonly delays GitHub's scheduled runs
   workflow_dispatch: {}   # allows manually triggering a run from the Actions tab
 
 permissions:
