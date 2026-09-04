@@ -77,7 +77,7 @@ def ensure_gc_entries(entries: list[dict], today: date):
     return changed
 
 
-def sync_room(entries: list[dict], room: str, feed_events: list[dict]) -> bool:
+def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: list[str]) -> bool:
     changed = False
     seen_uids = {e["uid"] for e in feed_events}
     by_uid = {e.get("icalUid"): e for e in entries if e.get("icalUid") and e["room"] == room}
@@ -91,6 +91,7 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict]) -> bool:
                 "icalUid": fe["uid"],
             })
             changed = True
+            notes.append(f"Room {room}: new booking, checkout {fe['checkout']}")
         elif existing["date"] != fe["checkout"]:
             if existing["tag"] in ("new", "update"):
                 existing["date"] = fe["checkout"]
@@ -99,6 +100,7 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict]) -> bool:
                 existing["date"] = fe["checkout"]
                 existing["tag"] = "update"
             changed = True
+            notes.append(f"Room {room}: checkout moved to {fe['checkout']}")
 
     for e in list(entries):
         if e["room"] != room or e["kind"] != "turnover" or not e.get("icalUid"):
@@ -107,9 +109,11 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict]) -> bool:
             continue
         if e["tag"] == "new":
             entries.remove(e)
+            changed = True
         elif e["tag"] != "cancelled":
             e["tag"] = "cancelled"
-        changed = True
+            changed = True
+            notes.append(f"Room {room}: cancelled (was {e['date']})")
 
     return changed
 
@@ -125,10 +129,11 @@ def main():
     entries = data["entries"]
 
     changed = False
+    notes: list[str] = []
     today = date.today()
     for room, url in zip(ROOMS, urls):
         events = parse_vevents(fetch(url))
-        if sync_room(entries, room, events):
+        if sync_room(entries, room, events, notes):
             changed = True
     if ensure_gc_entries(entries, today):
         changed = True
@@ -140,6 +145,8 @@ def main():
             json.dump(data, f, indent=2)
             f.write("\n")
 
+    for note in notes:
+        print("NOTE: " + note)
     print("CHANGED" if changed else "UNCHANGED")
 
 
