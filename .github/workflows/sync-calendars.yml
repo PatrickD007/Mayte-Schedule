@@ -1,0 +1,48 @@
+name: Sync Airbnb calendars
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # every hour, UTC
+  workflow_dispatch: {}   # allows manually triggering a run from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run sync
+        id: sync
+        run: |
+          OUTPUT=$(python sync_calendars.py \
+            "${{ secrets.ROOM1_ICAL_URL }}" \
+            "${{ secrets.ROOM2_ICAL_URL }}" \
+            "${{ secrets.ROOM4_ICAL_URL }}")
+          echo "$OUTPUT"
+          {
+            echo "output<<SYNC_EOF"
+            echo "$OUTPUT"
+            echo "SYNC_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push schedule.json if it changed
+        if: contains(steps.sync.outputs.output, 'CHANGED') && !contains(steps.sync.outputs.output, 'UNCHANGED')
+        run: |
+          git config user.name "Tranquility Base Bot"
+          git config user.email "tranquilitybaseairbnbbot@gmail.com"
+          git add schedule.json
+          git commit -m "Automated calendar sync"
+          git push
+
+      - name: Notify Patrick if there was real news
+        if: contains(steps.sync.outputs.output, 'NOTE:')
+        run: |
+          NOTES=$(printf '%s\n' "${{ steps.sync.outputs.output }}" | grep '^NOTE: ' | sed 's/^NOTE: //')
+          curl -s -d "$NOTES" -H "Title: Tranquility Base - schedule change" https://ntfy.sh/tranquillitybase-patrick-mayte-8f2kqyzzz007
