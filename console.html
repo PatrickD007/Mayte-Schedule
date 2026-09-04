@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tranquility Base Console</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#F3EFE7; --surface:#FFFFFF; --surface-2:#EDE7DA;
+    --ink:#2A2520; --muted:#746C60; --line:#DED5C4;
+    --room1:#1F7A8C; --room2:#B8791A; --room4:#7A3B6D;
+    --gc:#5B6B73; --off:#8A8378; --gc-bg:#E7E2D8; --off-bg:#E9E4DA;
+    --new:#3F7A4E; --new-bg:#E4EFE3;
+    --update:#35507A; --update-bg:#E3E8F0;
+    --cancelled:#A6402F; --cancelled-bg:#F3E3DF;
+    --room1-bg:#DEEAEC; --room2-bg:#F3E7D2; --room4-bg:#EBDDE8;
+    --pending:#96650E; --pending-bg:#F2E4C6; --pending-line:#E0C68C;
+    --accent:#3B5D50; --accent-ink:#FFFFFF;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1E1A16; --surface:#2A2520; --surface-2:#332D26;
+      --ink:#F2EEE6; --muted:#B3AA9C; --line:#453D33;
+      --room1:#5BB6C7; --room2:#E0A63E; --room4:#B879AA;
+      --gc:#9AA9B0; --off:#B0A996; --gc-bg:#333B3F; --off-bg:#3A362D;
+      --new:#79C08C; --new-bg:#2C3B2E;
+      --update:#8AA6D6; --update-bg:#2A3245;
+      --cancelled:#E08A78; --cancelled-bg:#402A26;
+      --room1-bg:#233C41; --room2-bg:#3C3222; --room4-bg:#3A2C37;
+      --pending:#E6BE6E; --pending-bg:#3D3320; --pending-line:#5A4B2C;
+      --accent:#6FA08E; --accent-ink:#16211D;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1E1A16; --surface:#2A2520; --surface-2:#332D26;
+    --ink:#F2EEE6; --muted:#B3AA9C; --line:#453D33;
+    --room1:#5BB6C7; --room2:#E0A63E; --room4:#B879AA;
+    --gc:#9AA9B0; --off:#B0A996; --gc-bg:#333B3F; --off-bg:#3A362D;
+    --new:#79C08C; --new-bg:#2C3B2E;
+    --update:#8AA6D6; --update-bg:#2A3245;
+    --cancelled:#E08A78; --cancelled-bg:#402A26;
+    --room1-bg:#233C41; --room2-bg:#3C3222; --room4-bg:#3A2C37;
+    --pending:#E6BE6E; --pending-bg:#3D3320; --pending-line:#5A4B2C;
+    --accent:#6FA08E; --accent-ink:#16211D;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg)}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Public Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px; margin:0 auto; padding:22px 18px 60px}
+  header{display:flex; align-items:baseline; justify-content:space-between; padding:6px 0 20px; flex-wrap:wrap; gap:6px}
+  .house{font-size:21px; font-weight:800; letter-spacing:-0.01em}
+  .sub{font-size:13px; color:var(--muted)}
+  a.link{font-size:12.5px; color:var(--accent); text-decoration:none; font-weight:700}
+  a.link:hover{text-decoration:underline}
+
+  h2{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700; margin:28px 0 10px 2px}
+  h2:first-of-type{margin-top:0}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px}
+  .draft.has-changes{border-color:var(--pending-line); background:var(--pending-bg)}
+  .draft-banner{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:800; color:var(--pending); text-transform:uppercase; letter-spacing:.03em; margin-bottom:10px}
+  .draft-banner .dot{width:7px; height:7px; border-radius:50%; background:var(--pending)}
+  .draft-text{white-space:pre-wrap; font-size:14.5px; line-height:1.65; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:12px}
+
+  button{font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; border-radius:10px; padding:9px 14px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink)}
+  button.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+
+  .list{display:flex; flex-direction:column; gap:7px}
+  .item{display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px}
+  .item.is-cancelled{opacity:.6}
+  .item .date{font-size:15px; font-weight:700; width:42px; flex:0 0 auto}
+  .chip{display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:800; padding:4px 10px; border-radius:999px; flex:0 0 auto}
+  .chip.r1{background:var(--room1-bg); color:var(--room1)}
+  .chip.r2{background:var(--room2-bg); color:var(--room2)}
+  .chip.r4{background:var(--room4-bg); color:var(--room4)}
+  .chip.gc{background:var(--gc-bg); color:var(--gc)}
+  .chip.off{background:var(--off-bg); color:var(--off)}
+  .tag{font-size:10.5px; font-weight:800; letter-spacing:.03em; padding:3px 8px; border-radius:999px; flex:0 0 auto}
+  .tag.new{background:var(--new-bg); color:var(--new)}
+  .tag.update{background:var(--update-bg); color:var(--update)}
+  .tag.cancelled{background:var(--cancelled-bg); color:var(--cancelled)}
+  .old-date{text-decoration:line-through; opacity:.55; font-weight:600; font-size:12.5px}
+  .empty{color:var(--muted); font-size:13.5px; padding:10px 2px}
+
+  .history-item{display:flex; gap:12px; padding:10px 2px; border-bottom:1px solid var(--line); font-size:13px}
+  .history-item:last-child{border-bottom:none}
+  .history-when{color:var(--muted); flex:0 0 96px}
+  .history-text{white-space:pre-wrap; color:var(--muted); flex:1}
+
+  .howto{font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.5}
+  footer{margin-top:32px; font-size:12px; color:var(--muted); text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="house">🔑 Tranquility Base Console</div>
+      <div class="sub">Room mapping: 1 Peaceful Room · 2 Primary Suite · (3 storage) · 4 Peaceful Suite</div>
+    </div>
+    <a class="link" href="index.html" target="_blank">View Mayte's page →</a>
+  </header>
+
+  <h2>Draft to Mayte</h2>
+  <div class="card draft" id="draftCard">
+    <div class="draft-banner" id="draftBanner" hidden><span class="dot"></span><span id="draftBannerText"></span></div>
+    <div class="draft-text" id="draftText">Loading…</div>
+    <button class="primary" id="copyBtn">Copy message</button>
+    <div class="howto">To make a change: tell Claude in chat (e.g. "move the 9/16 GC to 9/18") — it'll update this page directly. Once you've actually sent a message to Mayte, tell Claude "sent it" so it can log it and clear the tags above.</div>
+  </div>
+
+  <h2>Schedule</h2>
+  <div class="card"><div class="list" id="scheduleList"><div class="empty">Loading…</div></div></div>
+
+  <h2>History</h2>
+  <div class="card"><div id="historyList"><div class="empty">Nothing sent yet.</div></div></div>
+
+  <footer>Tranquility Base · Pasadena</footer>
+</div>
+
+<script>
+const STRIKE = "̶";
+const strike = s => s.split("").map(c => c + STRIKE).join("");
+const fmtDate = iso => { const [y,m,d] = iso.split("-").map(Number); return `${m}/${d}`; };
+const labelFor = e => e.kind === "off" ? "Mayte Off" : e.kind === "gc" ? "GC" : `#${e.room}`;
+const chipClass = e => e.kind === "gc" ? "gc" : e.kind === "off" ? "off" : "r" + e.room;
+const chipLabel = e => e.kind === "gc" ? "GC" : e.kind === "off" ? "Off" : e.room;
+
+function renderLine(e){
+  const dateStr = fmtDate(e.date);
+  let line = `${dateStr} ${labelFor(e)}`;
+  if (e.tag === "update" && e.oldDate) line = `${strike(fmtDate(e.oldDate))} → ${dateStr} ${labelFor(e)}`;
+  else if (e.tag === "cancelled") line = strike(line);
+  if (e.tag) line += ` (${e.tag.toUpperCase()})`;
+  return `- ${line}`;
+}
+
+function generateMessage(entries){
+  const ordered = [...entries].sort((a,b) => a.date.localeCompare(b.date));
+  const body = ordered.map(renderLine).join("\n");
+  return `Hi Mayte! Here's the updated schedule:\n\nSo we have:\n${body}\n\nFull schedule: ${location.origin}${location.pathname.replace(/console\.html$/, "index.html")}`;
+}
+
+Promise.all([
+  fetch("schedule.json?_=" + Date.now()).then(r => r.json()),
+  fetch("history.json?_=" + Date.now()).then(r => r.json()).catch(() => ({sent: []})),
+]).then(([sched, hist]) => {
+  const entries = sched.entries;
+  const hasChanges = entries.some(e => e.tag);
+  const card = document.getElementById("draftCard");
+  const banner = document.getElementById("draftBanner");
+  card.classList.toggle("has-changes", hasChanges);
+  banner.hidden = !hasChanges;
+  if (hasChanges){
+    const n = entries.filter(e => e.tag).length;
+    document.getElementById("draftBannerText").textContent = `${n} change${n===1?"":"s"} ready to send`;
+  }
+  document.getElementById("draftText").textContent = entries.length ? generateMessage(entries) : "No schedule entries yet.";
+
+  const list = document.getElementById("scheduleList");
+  const ordered = [...entries].sort((a,b) => a.date.localeCompare(b.date));
+  list.innerHTML = ordered.length ? "" : '<div class="empty">Nothing scheduled.</div>';
+  for (const e of ordered){
+    const row = document.createElement("div");
+    row.className = "item" + (e.tag === "cancelled" ? " is-cancelled" : "");
+    row.innerHTML = `
+      <div class="date">${fmtDate(e.date)}</div>
+      <span class="chip ${chipClass(e)}">${chipLabel(e)}</span>
+      ${e.tag === "update" && e.oldDate ? `<span class="old-date">${fmtDate(e.oldDate)}</span>` : ""}
+      ${e.tag ? `<span class="tag ${e.tag}">${e.tag.toUpperCase()}</span>` : ""}
+    `;
+    list.appendChild(row);
+  }
+
+  const histList = document.getElementById("historyList");
+  const sent = [...(hist.sent||[])].sort((a,b) => b.sentAt.localeCompare(a.sentAt));
+  if (sent.length){
+    histList.innerHTML = sent.map(h => `
+      <div class="history-item">
+        <div class="history-when">${new Date(h.sentAt).toLocaleDateString(undefined,{month:"short",day:"numeric"})}</div>
+        <div class="history-text">${h.text.replace(/</g,"&lt;")}</div>
+      </div>
+    `).join("");
+  }
+}).catch(() => {
+  document.getElementById("draftText").textContent = "Couldn't load the schedule — try refreshing.";
+});
+
+document.getElementById("copyBtn").onclick = async () => {
+  const text = document.getElementById("draftText").textContent;
+  try { await navigator.clipboard.writeText(text); } catch {}
+  const btn = document.getElementById("copyBtn");
+  const original = btn.textContent;
+  btn.textContent = "Copied!";
+  setTimeout(() => btn.textContent = original, 1500);
+};
+</script>
+</body>
+</html>

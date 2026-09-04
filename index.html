@@ -51,13 +51,8 @@
   .house{font-size:22px; font-weight:800; letter-spacing:-0.01em}
   .sub{font-size:14px; color:var(--muted); margin-top:2px}
 
-  .legend{
-    display:flex; gap:8px; margin:18px 0 22px;
-  }
-  .door{
-    flex:1; border-radius:14px; padding:10px 6px; text-align:center;
-    border:1px solid var(--line);
-  }
+  .legend{display:flex; gap:8px; margin:18px 0 22px}
+  .door{flex:1; border-radius:14px; padding:10px 6px; text-align:center; border:1px solid var(--line)}
   .door .num{font-size:20px; font-weight:800; line-height:1}
   .door .name{font-size:10.5px; margin-top:4px; color:var(--muted); line-height:1.2}
   .door.r1{background:var(--room1-bg)} .door.r1 .num{color:var(--room1)}
@@ -66,49 +61,30 @@
   .door.r3{opacity:.55}
   .door.r3 .num{color:var(--muted)}
 
-  .hero{
-    background:var(--surface); border:1px solid var(--line); border-radius:18px;
-    padding:18px; margin-bottom:22px;
-  }
+  .hero{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:22px}
   .hero .eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700}
   .hero .row{display:flex; align-items:baseline; gap:12px; margin-top:8px}
   .hero .date{font-size:34px; font-weight:800; letter-spacing:-0.02em}
-  .hero .chip{margin-top:2px}
 
   .section-label{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700; margin:0 0 10px 2px}
 
   .list{display:flex; flex-direction:column; gap:8px}
-  .item{
-    display:flex; align-items:center; gap:12px;
-    background:var(--surface); border:1px solid var(--line); border-radius:14px;
-    padding:12px 14px;
-  }
-  .item .date{
-    font-size:17px; font-weight:700; width:44px; flex:0 0 auto;
-  }
-  .chip{
-    display:inline-flex; align-items:center; gap:5px;
-    font-size:14px; font-weight:800; padding:5px 11px; border-radius:999px;
-    flex:0 0 auto;
-  }
+  .item{display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px}
+  .item .date{font-size:17px; font-weight:700; width:44px; flex:0 0 auto}
+  .chip{display:inline-flex; align-items:center; gap:5px; font-size:14px; font-weight:800; padding:5px 11px; border-radius:999px; flex:0 0 auto}
   .chip.r1{background:var(--room1-bg); color:var(--room1)}
   .chip.r2{background:var(--room2-bg); color:var(--room2)}
   .chip.r4{background:var(--room4-bg); color:var(--room4)}
   .chip.gc{background:var(--gc-bg); color:var(--gc)}
   .chip.off{background:var(--off-bg); color:var(--off)}
-
-  .tag{
-    margin-left:auto; font-size:11px; font-weight:800; letter-spacing:.03em;
-    padding:4px 9px; border-radius:999px; flex:0 0 auto;
-  }
+  .old-date{text-decoration:line-through; opacity:.55; font-weight:600; font-size:13px}
+  .tag{margin-left:auto; font-size:11px; font-weight:800; letter-spacing:.03em; padding:4px 9px; border-radius:999px; flex:0 0 auto}
   .tag.new{background:var(--new-bg); color:var(--new)}
   .tag.update{background:var(--update-bg); color:var(--update)}
   .tag.cancelled{background:var(--cancelled-bg); color:var(--cancelled)}
-
-  .item.is-cancelled .date, .item.is-cancelled .chip{
-    text-decoration: line-through; text-decoration-thickness: 2px; opacity:.6;
-  }
-  .old-date{ text-decoration:line-through; opacity:.55; font-weight:600; font-size:13px; margin-right:2px}
+  .item.is-cancelled{opacity:.6}
+  .item.is-cancelled .date, .item.is-cancelled .chip{text-decoration:line-through; text-decoration-thickness:2px}
+  .empty{color:var(--muted); font-size:14px; padding:6px 2px}
 
   footer{margin-top:28px; font-size:12.5px; color:var(--muted); text-align:center; line-height:1.5}
 </style>
@@ -127,30 +103,56 @@
     <div class="door r4"><div class="num">4</div><div class="name">Peaceful Suite</div></div>
   </div>
 
-  <div class="hero">
+  <div class="hero" id="hero">
     <div class="eyebrow">Next visit</div>
-    <div class="row">
-      <div class="date">9/4</div>
-      <span class="chip r1">1</span>
-    </div>
+    <div class="row" id="heroRow"><span class="empty">Loading…</span></div>
   </div>
 
   <div class="section-label">Upcoming</div>
-  <div class="list">
-    <div class="item"><div class="date">9/7</div><span class="chip r1">1</span></div>
-    <div class="item"><div class="date">9/9</div><span class="chip r2">2</span></div>
-    <div class="item"><div class="date">9/13</div><span class="chip r2">2</span></div>
-    <div class="item"><div class="date">9/15</div><span class="chip r1">1</span></div>
-    <div class="item"><div class="date">9/16</div><span class="chip gc">GC</span></div>
-    <div class="item"><div class="date">9/30</div><span class="chip gc">GC</span></div>
-    <div class="item"><div class="date">10/14</div><span class="chip gc">GC</span></div>
-    <div class="item"><div class="date">10/19</div><span class="chip r2">2</span></div>
-    <div class="item"><div class="date">10/28</div><span class="chip gc">GC</span></div>
-  </div>
+  <div class="list" id="list"><div class="empty">Loading…</div></div>
 
-  <footer>
-    Updated by Patrick · questions, just text him
-  </footer>
+  <footer>Updated by Patrick · questions, just text him</footer>
 </div>
+
+<script>
+function fmtDate(iso){ const [y,m,d] = iso.split("-").map(Number); return `${m}/${d}`; }
+function chipClass(e){ return e.kind === "gc" ? "gc" : e.kind === "off" ? "off" : "r" + e.room; }
+function chipLabel(e){ return e.kind === "gc" ? "GC" : e.kind === "off" ? "Off" : e.room; }
+
+fetch("schedule.json?_=" + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    const today = new Date().toISOString().slice(0,10);
+    const entries = [...data.entries].sort((a,b) => a.date.localeCompare(b.date));
+
+    const upcoming = entries.filter(e => e.date >= today || e.tag === "cancelled");
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+    if (!upcoming.length){
+      list.innerHTML = '<div class="empty">Nothing scheduled.</div>';
+    } else {
+      for (const e of upcoming){
+        const row = document.createElement("div");
+        row.className = "item" + (e.tag === "cancelled" ? " is-cancelled" : "");
+        row.innerHTML = `
+          <div class="date">${fmtDate(e.date)}</div>
+          <span class="chip ${chipClass(e)}">${chipLabel(e)}</span>
+          ${e.tag === "update" && e.oldDate ? `<span class="old-date">${fmtDate(e.oldDate)}</span>` : ""}
+          ${e.tag ? `<span class="tag ${e.tag}">${e.tag.toUpperCase()}</span>` : ""}
+        `;
+        list.appendChild(row);
+      }
+    }
+
+    const next = entries.find(e => e.date >= today && e.tag !== "cancelled");
+    const heroRow = document.getElementById("heroRow");
+    heroRow.innerHTML = next
+      ? `<div class="date">${fmtDate(next.date)}</div><span class="chip ${chipClass(next)}">${chipLabel(next)}</span>`
+      : '<span class="empty">Nothing upcoming.</span>';
+  })
+  .catch(() => {
+    document.getElementById("list").innerHTML = '<div class="empty">Couldn\'t load the schedule — try refreshing.</div>';
+  });
+</script>
 </body>
 </html>
