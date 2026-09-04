@@ -15,9 +15,18 @@
       "date": "2026-09-07",
       "kind": "turnover",
       "room": "1",
-      "tag": "update",
-      "oldDate": "2026-09-08",
+      "tag": null,
+      "oldDate": null,
       "icalUid": "1418fb94e984-b9c5b4c37190a9eadfc137798161e0bc@airbnb.com"
+    },
+    {
+      "id": "2026-09-15-r1",
+      "date": "2026-09-15",
+      "kind": "turnover",
+      "room": "1",
+      "tag": null,
+      "oldDate": null,
+      "icalUid": "1418fb94e984-4f05bdb163ae1f8d0f93b427f531d2b3@airbnb.com"
     },
     {
       "id": "2026-09-09-r2",
@@ -39,21 +48,12 @@
     },
     {
       "id": "2026-10-19-r2",
-      "date": "2026-09-05",
+      "date": "2026-10-19",
       "kind": "turnover",
       "room": "2",
       "tag": null,
       "oldDate": null,
       "icalUid": "1418fb94e984-5b9cc60477e9f68f8b8994078d4c2160@airbnb.com"
-    },
-    {
-      "id": "2026-09-20-r2-test",
-      "date": "2026-09-20",
-      "kind": "turnover",
-      "room": "2",
-      "tag": "cancelled",
-      "oldDate": null,
-      "icalUid": "FAKE-TEST-UID-DOES-NOT-EXIST-ON-REAL-FEED"
     },
     {
       "id": "2026-09-16-gc",
@@ -99,15 +99,6 @@
       "tag": null,
       "oldDate": null,
       "icalUid": null
-    },
-    {
-      "id": "2026-09-15-r1-1418fb94",
-      "date": "2026-09-15",
-      "kind": "turnover",
-      "room": "1",
-      "tag": "new",
-      "oldDate": null,
-      "icalUid": "1418fb94e984-4f05bdb163ae1f8d0f93b427f531d2b3@airbnb.com"
     }
   ]
 }
