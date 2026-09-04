@@ -99,6 +99,15 @@
       "tag": null,
       "oldDate": null,
       "icalUid": null
+    },
+    {
+      "id": "2026-09-15-r1-1418fb94",
+      "date": "2026-09-15",
+      "kind": "turnover",
+      "room": "1",
+      "tag": "new",
+      "oldDate": null,
+      "icalUid": "1418fb94e984-4f05bdb163ae1f8d0f93b427f531d2b3@airbnb.com"
     }
   ]
 }
