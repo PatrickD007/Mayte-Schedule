@@ -44,5 +44,8 @@ jobs:
       - name: Notify Patrick if there was real news
         if: contains(steps.sync.outputs.output, 'NOTE:')
         run: |
-          NOTES=$(printf '%s\n' "${{ steps.sync.outputs.output }}" | grep '^NOTE: ' | sed 's/^NOTE: //')
-          curl -s -d "$NOTES" -H "Title: Tranquility Base - schedule change" https://ntfy.sh/tranquillitybase-patrick-mayte-8f2kqyzzz007
+          DRAFT=$(python render_draft.py)
+          # No click URL set below -- per ntfy's iOS behavior, tapping a
+          # notification with no click URL copies its full text to the
+          # clipboard, letting Patrick paste straight into Messages.
+          curl -s -d "$DRAFT" -H "Title: Tranquility Base - schedule change" https://ntfy.sh/tranquillitybase-patrick-mayte-8f2kqyzzz007
