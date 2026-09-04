@@ -25,8 +25,8 @@ Rules (see PROJECT_PLAN.md for full context):
 
 import json
 import re
+import subprocess
 import sys
-import urllib.request
 from datetime import date, timedelta
 
 GC_ANCHOR = date(2026, 9, 16)
@@ -37,8 +37,16 @@ ROOMS = ["1", "2", "4"]
 
 
 def fetch(url: str) -> str:
-    with urllib.request.urlopen(url, timeout=20) as resp:
-        return resp.read().decode("utf-8")
+    # Uses curl (not urllib) because some sandboxed environments enforce an
+    # outbound network policy via proxy env vars that urllib doesn't pick up
+    # the same way curl does.
+    result = subprocess.run(
+        ["curl", "-s", "--fail", "--max-time", "20", url],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"fetch failed for {url}: curl exit {result.returncode}: {result.stderr.strip()}")
+    return result.stdout
 
 
 def parse_vevents(ics_text: str):

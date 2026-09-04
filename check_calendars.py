@@ -10,12 +10,11 @@ Prints one "NOTE: ..." line per real change found, then a final line:
 "CHANGED" or "UNCHANGED". Exit code is always 0.
 """
 
+import json
 import sys
-import urllib.request
 
 sys.path.insert(0, ".")
 from sync_calendars import ROOMS, fetch, parse_vevents, sync_room  # noqa: E402
-import json
 
 SCHEDULE_URL = "https://raw.githubusercontent.com/PatrickD007/Mayte-Schedule/main/schedule.json"
 
@@ -26,8 +25,7 @@ def main():
         print("Usage: check_calendars.py <room1_url> <room2_url> <room4_url>", file=sys.stderr)
         sys.exit(1)
 
-    with urllib.request.urlopen(SCHEDULE_URL + "?_=cachebust", timeout=20) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    data = json.loads(fetch(SCHEDULE_URL))
     entries = data["entries"]
 
     changed = False
