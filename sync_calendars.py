@@ -65,11 +65,15 @@ def parse_vevents(ics_text: str):
 
         summary = field("SUMMARY")
         uid = field("UID")
+        dtstart = field("DTSTART")
         dtend = field("DTEND")
-        if not (summary and uid and dtend) or summary != "Reserved":
+        if not (summary and uid and dtstart and dtend) or summary != "Reserved":
             continue
-        y, m, d = int(dtend[:4]), int(dtend[4:6]), int(dtend[6:8])
-        events.append({"uid": uid, "checkout": date(y, m, d).isoformat()})
+
+        def to_iso(raw):
+            return date(int(raw[:4]), int(raw[4:6]), int(raw[6:8])).isoformat()
+
+        events.append({"uid": uid, "checkin": to_iso(dtstart), "checkout": to_iso(dtend)})
     return events
 
 
@@ -100,12 +104,21 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
         if existing is None:
             entries.append({
                 "id": f"{fe['checkout']}-r{room}-{fe['uid'][:8]}", "date": fe["checkout"],
+                "checkIn": fe["checkin"],
                 "kind": "turnover", "room": room, "tag": "new", "oldDate": None,
                 "icalUid": fe["uid"],
             })
             changed = True
             notes.append(f"Room {room}: new booking, checkout {fmt(fe['checkout'])}")
-        elif existing["date"] != fe["checkout"]:
+            continue
+
+        if existing.get("checkIn") != fe["checkin"]:
+            # Check-in shifting alone doesn't affect Mayte's cleaning schedule,
+            # so it's not NOTE-worthy -- just keep the calendar view accurate.
+            existing["checkIn"] = fe["checkin"]
+            changed = True
+
+        if existing["date"] != fe["checkout"]:
             if existing["tag"] in ("new", "update"):
                 existing["date"] = fe["checkout"]
             else:
