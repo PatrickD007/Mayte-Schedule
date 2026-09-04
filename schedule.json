@@ -1,15 +1,104 @@
 {
-  "updatedAt": "2026-09-04T05:01:00Z",
+  "updatedAt": "2026-09-03T00:00:00Z",
   "entries": [
-    {"id": "2026-09-04-r1", "date": "2026-09-04", "kind": "turnover", "room": "1", "tag": null, "oldDate": null, "icalUid": "1418fb94e984-d4eb816702172522e0c86eceb51a93bc@airbnb.com"},
-    {"id": "2026-09-07-r1", "date": "2026-09-07", "kind": "turnover", "room": "1", "tag": null, "oldDate": null, "icalUid": "1418fb94e984-b9c5b4c37190a9eadfc137798161e0bc@airbnb.com"},
-    {"id": "2026-09-15-r1", "date": "2026-09-15", "kind": "turnover", "room": "1", "tag": null, "oldDate": null, "icalUid": "1418fb94e984-4f05bdb163ae1f8d0f93b427f531d2b3@airbnb.com"},
-    {"id": "2026-09-09-r2", "date": "2026-09-09", "kind": "turnover", "room": "2", "tag": null, "oldDate": null, "icalUid": "1418fb94e984-4902f80591c1a9cac878052879b9edca@airbnb.com"},
-    {"id": "2026-09-13-r2", "date": "2026-09-13", "kind": "turnover", "room": "2", "tag": null, "oldDate": null, "icalUid": "1418fb94e984-225776f1c752510a75d7841ab4ada307@airbnb.com"},
-    {"id": "2026-10-19-r2", "date": "2026-10-19", "kind": "turnover", "room": "2", "tag": null, "oldDate": null, "icalUid": "1418fb94e984-5b9cc60477e9f68f8b8994078d4c2160@airbnb.com"},
-    {"id": "2026-09-16-gc", "date": "2026-09-16", "kind": "gc", "room": null, "tag": null, "oldDate": null, "icalUid": null},
-    {"id": "2026-09-30-gc", "date": "2026-09-30", "kind": "gc", "room": null, "tag": null, "oldDate": null, "icalUid": null},
-    {"id": "2026-10-14-gc", "date": "2026-10-14", "kind": "gc", "room": null, "tag": null, "oldDate": null, "icalUid": null},
-    {"id": "2026-10-28-gc", "date": "2026-10-28", "kind": "gc", "room": null, "tag": null, "oldDate": null, "icalUid": null}
+    {
+      "id": "2026-09-04-r1",
+      "date": "2026-09-04",
+      "kind": "turnover",
+      "room": "1",
+      "tag": null,
+      "oldDate": null,
+      "icalUid": "1418fb94e984-d4eb816702172522e0c86eceb51a93bc@airbnb.com"
+    },
+    {
+      "id": "2026-09-07-r1",
+      "date": "2026-09-07",
+      "kind": "turnover",
+      "room": "1",
+      "tag": null,
+      "oldDate": null,
+      "icalUid": "1418fb94e984-b9c5b4c37190a9eadfc137798161e0bc@airbnb.com"
+    },
+    {
+      "id": "2026-09-15-r1",
+      "date": "2026-09-15",
+      "kind": "turnover",
+      "room": "1",
+      "tag": null,
+      "oldDate": null,
+      "icalUid": "1418fb94e984-4f05bdb163ae1f8d0f93b427f531d2b3@airbnb.com"
+    },
+    {
+      "id": "2026-09-09-r2",
+      "date": "2026-09-09",
+      "kind": "turnover",
+      "room": "2",
+      "tag": null,
+      "oldDate": null,
+      "icalUid": "1418fb94e984-4902f80591c1a9cac878052879b9edca@airbnb.com"
+    },
+    {
+      "id": "2026-09-13-r2",
+      "date": "2026-09-13",
+      "kind": "turnover",
+      "room": "2",
+      "tag": null,
+      "oldDate": null,
+      "icalUid": "1418fb94e984-225776f1c752510a75d7841ab4ada307@airbnb.com"
+    },
+    {
+      "id": "2026-10-19-r2",
+      "date": "2026-10-19",
+      "kind": "turnover",
+      "room": "2",
+      "tag": null,
+      "oldDate": null,
+      "icalUid": "1418fb94e984-5b9cc60477e9f68f8b8994078d4c2160@airbnb.com"
+    },
+    {
+      "id": "2026-09-16-gc",
+      "date": "2026-09-16",
+      "kind": "gc",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    },
+    {
+      "id": "2026-09-30-gc",
+      "date": "2026-09-30",
+      "kind": "gc",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    },
+    {
+      "id": "2026-10-14-gc",
+      "date": "2026-10-14",
+      "kind": "gc",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    },
+    {
+      "id": "2026-10-28-gc",
+      "date": "2026-10-28",
+      "kind": "gc",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    },
+    {
+      "id": "2026-11-11-gc",
+      "date": "2026-11-11",
+      "kind": "gc",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    }
   ]
 }
