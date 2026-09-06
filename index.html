@@ -106,6 +106,7 @@
   .cal-dow{font-size:10px; text-align:center; color:var(--muted); font-weight:700; padding-bottom:2px}
   .cal-cell{position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12.5px; border-radius:7px; background:var(--surface-2); border:1px solid var(--line); color:var(--muted)}
   .cal-cell.cal-empty{border:none; background:transparent}
+  .cal-cell.cal-adjacent{border-color:transparent; background:transparent; color:var(--muted); font-weight:400}
   .cal-cell.occ{font-weight:800; border-color:transparent}
   .cal-cell.cal-today{box-shadow:0 0 0 2px var(--ink) inset}
   .cal-cell.tag-new{box-shadow:0 0 0 2px var(--new) inset}
@@ -168,7 +169,7 @@ function buildRoomCalendarHTML(occupied, allBookings, gcDates){
   const todayIso = toIso(today);
   const sortedOccupied = [...occupied].sort((a, b) => a.checkIn.localeCompare(b.checkIn));
 
-  function cell(iso, dayLabel){
+  function cell(iso, dayLabel, adjacent){
     let cls = "cal-cell";
     let style = "";
     const bookingIdx = sortedOccupied.findIndex(b => iso >= b.checkIn && iso < b.date);
@@ -176,6 +177,7 @@ function buildRoomCalendarHTML(occupied, allBookings, gcDates){
     const checkoutHere = allBookings.find(b => b.date === iso);
     if (checkoutHere && checkoutHere.tag) cls += " tag-" + checkoutHere.tag;
     if (iso === todayIso) cls += " cal-today";
+    if (adjacent) cls += " cal-adjacent";
     const gcOverlay = gcDates.has(iso) ? `<span class="gc-icon-overlay">🧹</span>` : "";
     return `<div class="${cls}"${style}>${dayLabel}${gcOverlay}</div>`;
   }
@@ -195,7 +197,10 @@ function buildRoomCalendarHTML(occupied, allBookings, gcDates){
     ["S","M","T","W","T","F","S"].forEach(w => html += `<div class="cal-dow">${w}</div>`);
     if (i === 0){
       const prevMonthEnd = new Date(year, monthIdx, 0); // last day of previous month
-      for (let n = startDow; n > 0; n--) html += cell(toIso(addDays(prevMonthEnd, -(n - 1))), addDays(prevMonthEnd, -(n - 1)).getDate());
+      for (let n = startDow; n > 0; n--){
+        const d = addDays(prevMonthEnd, -(n - 1));
+        html += cell(toIso(d), d.getDate(), true);
+      }
     } else {
       for (let e = 0; e < startDow; e++) html += `<div class="cal-cell cal-empty"></div>`;
     }
