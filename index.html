@@ -106,7 +106,6 @@
   .cal-dow{font-size:10px; text-align:center; color:var(--muted); font-weight:700; padding-bottom:2px}
   .cal-cell{position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12.5px; border-radius:7px; background:var(--surface-2); border:1px solid var(--line); color:var(--muted)}
   .cal-cell.cal-empty{border:none; background:transparent}
-  .cal-cell.cal-adjacent{border-color:transparent; background:transparent; color:var(--muted); font-weight:400}
   .cal-cell.occ{font-weight:800; border-color:transparent}
   .cal-cell.cal-today{box-shadow:0 0 0 2px var(--ink) inset}
   .cal-cell.tag-new{box-shadow:0 0 0 2px var(--new) inset}
@@ -169,7 +168,7 @@ function buildRoomCalendarHTML(occupied, allBookings, gcDates){
   const todayIso = toIso(today);
   const sortedOccupied = [...occupied].sort((a, b) => a.checkIn.localeCompare(b.checkIn));
 
-  function cell(iso, dayLabel, adjacent){
+  function cell(iso, dayLabel){
     let cls = "cal-cell";
     let style = "";
     const bookingIdx = sortedOccupied.findIndex(b => iso >= b.checkIn && iso < b.date);
@@ -177,17 +176,31 @@ function buildRoomCalendarHTML(occupied, allBookings, gcDates){
     const checkoutHere = allBookings.find(b => b.date === iso);
     if (checkoutHere && checkoutHere.tag) cls += " tag-" + checkoutHere.tag;
     if (iso === todayIso) cls += " cal-today";
-    if (adjacent) cls += " cal-adjacent";
     const gcOverlay = gcDates.has(iso) ? `<span class="gc-icon-overlay">🧹</span>` : "";
     return `<div class="${cls}"${style}>${dayLabel}${gcOverlay}</div>`;
   }
 
   let html = "";
 
-  // This month and next month, shown in full. Current month's leading blank
-  // cells are back-filled with the tail end of the previous month (like a
-  // normal calendar) instead of a separate "Previous Week" box -- avoids
-  // showing the same days twice when the current week starts on Sunday.
+  // One week of history, under the real month header it belongs to -- only
+  // the days that fall outside the current month are shown (the rest of
+  // that week is already covered by the current month's own grid below).
+  const currentWeekStart = addDays(today, -today.getDay());
+  const prevWeekDays = Array.from({length: 7}, (_, i) => addDays(currentWeekStart, i - 7));
+  const leadInDays = prevWeekDays.filter(d => d.getMonth() !== today.getMonth() || d.getFullYear() !== today.getFullYear());
+  if (leadInDays.length){
+    const labelMonth = leadInDays[0].getMonth(), labelYear = leadInDays[0].getFullYear();
+    html += `<div class="cal-month"><div class="cal-month-label">${leadInDays[0].toLocaleDateString(undefined, {month: "long", year: "numeric"})}</div><div class="cal-grid">`;
+    ["S","M","T","W","T","F","S"].forEach(w => html += `<div class="cal-dow">${w}</div>`);
+    for (const d of prevWeekDays){
+      html += (d.getMonth() === labelMonth && d.getFullYear() === labelYear)
+        ? cell(toIso(d), d.getDate())
+        : `<div class="cal-cell cal-empty"></div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  // This month and next month, shown in full.
   for (let i = 0; i < 2; i++){
     const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
     const year = d.getFullYear(), monthIdx = d.getMonth();
@@ -195,15 +208,7 @@ function buildRoomCalendarHTML(occupied, allBookings, gcDates){
     const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
     html += `<div class="cal-month"><div class="cal-month-label">${d.toLocaleDateString(undefined, {month: "long", year: "numeric"})}</div><div class="cal-grid">`;
     ["S","M","T","W","T","F","S"].forEach(w => html += `<div class="cal-dow">${w}</div>`);
-    if (i === 0){
-      const prevMonthEnd = new Date(year, monthIdx, 0); // last day of previous month
-      for (let n = startDow; n > 0; n--){
-        const d = addDays(prevMonthEnd, -(n - 1));
-        html += cell(toIso(d), d.getDate(), true);
-      }
-    } else {
-      for (let e = 0; e < startDow; e++) html += `<div class="cal-cell cal-empty"></div>`;
-    }
+    for (let e = 0; e < startDow; e++) html += `<div class="cal-cell cal-empty"></div>`;
     for (let day = 1; day <= daysInMonth; day++) html += cell(isoDate(year, monthIdx, day), day);
     html += `</div></div>`;
   }
