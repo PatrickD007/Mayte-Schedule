@@ -151,13 +151,6 @@ function chipLabel(e){ return e.kind === "gc" ? "GC" : e.kind === "off" ? "Off" 
 
 const ROOM_NAMES = {"1": "Peaceful Room", "2": "Primary Suite", "4": "Peaceful Suite"};
 
-function monthGrid(year, monthIdx){
-  const startDow = new Date(year, monthIdx, 1).getDay();
-  const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-  const cells = Array(startDow).fill(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-  return cells;
-}
 function isoDate(year, monthIdx, day){
   return `${year}-${String(monthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
@@ -189,27 +182,24 @@ function buildRoomCalendarHTML(occupied, allBookings, gcDates){
 
   let html = "";
 
-  // Previous calendar week (Sun-Sat), for historical context
-  const currentWeekStart = addDays(today, -today.getDay());
-  const prevWeekStart = addDays(currentWeekStart, -7);
-  html += `<div class="cal-month"><div class="cal-month-label">Previous Week</div><div class="cal-grid">`;
-  ["S","M","T","W","T","F","S"].forEach(w => html += `<div class="cal-dow">${w}</div>`);
-  for (let i = 0; i < 7; i++){
-    const d = addDays(prevWeekStart, i);
-    html += cell(toIso(d), d.getDate());
-  }
-  html += `</div></div>`;
-
-  // This month and next month, shown in full
+  // This month and next month, shown in full. Current month's leading blank
+  // cells are back-filled with the tail end of the previous month (like a
+  // normal calendar) instead of a separate "Previous Week" box -- avoids
+  // showing the same days twice when the current week starts on Sunday.
   for (let i = 0; i < 2; i++){
     const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
     const year = d.getFullYear(), monthIdx = d.getMonth();
+    const startDow = new Date(year, monthIdx, 1).getDay();
+    const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
     html += `<div class="cal-month"><div class="cal-month-label">${d.toLocaleDateString(undefined, {month: "long", year: "numeric"})}</div><div class="cal-grid">`;
     ["S","M","T","W","T","F","S"].forEach(w => html += `<div class="cal-dow">${w}</div>`);
-    for (const day of monthGrid(year, monthIdx)){
-      if (day === null){ html += `<div class="cal-cell cal-empty"></div>`; continue; }
-      html += cell(isoDate(year, monthIdx, day), day);
+    if (i === 0){
+      const prevMonthEnd = new Date(year, monthIdx, 0); // last day of previous month
+      for (let n = startDow; n > 0; n--) html += cell(toIso(addDays(prevMonthEnd, -(n - 1))), addDays(prevMonthEnd, -(n - 1)).getDate());
+    } else {
+      for (let e = 0; e < startDow; e++) html += `<div class="cal-cell cal-empty"></div>`;
     }
+    for (let day = 1; day <= daysInMonth; day++) html += cell(isoDate(year, monthIdx, day), day);
     html += `</div></div>`;
   }
   return html;
