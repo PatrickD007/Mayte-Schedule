@@ -17,6 +17,8 @@ Rules (see PROJECT_PLAN.md for full context):
       been told any version of it yet, or oldDate is already anchored correctly)
     - otherwise (already-sent baseline) -> tag "update", oldDate = previous date
 - A previously-seen UID disappears from the feed:
+    - if its checkout date has already passed -> delete outright; Airbnb's feed
+      naturally drops completed stays, this isn't a real cancellation
     - if it was tagged "new" (never sent) -> delete outright, nothing to tell Mayte
     - otherwise -> tag "cancelled" (kept so it shows once in the next draft)
 - GC entries are generated on a fixed 14-day cadence anchored at 2026-09-16,
@@ -94,7 +96,7 @@ def ensure_gc_entries(entries: list[dict], today: date):
     return changed
 
 
-def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: list[str]) -> bool:
+def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: list[str], today: date) -> bool:
     changed = False
     seen_uids = {e["uid"] for e in feed_events}
     by_uid = {e.get("icalUid"): e for e in entries if e.get("icalUid") and e["room"] == room}
@@ -133,6 +135,12 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
             continue
         if e["icalUid"] in seen_uids:
             continue
+        if e["date"] < today.isoformat():
+            # Checkout day already passed -- Airbnb's own feed drops completed
+            # stays on its own, so a disappearance here isn't a real cancellation.
+            entries.remove(e)
+            changed = True
+            continue
         if e["tag"] == "new":
             entries.remove(e)
             changed = True
@@ -159,7 +167,7 @@ def main():
     today = date.today()
     for room, url in zip(ROOMS, urls):
         events = parse_vevents(fetch(url))
-        if sync_room(entries, room, events, notes):
+        if sync_room(entries, room, events, notes, today):
             changed = True
     if ensure_gc_entries(entries, today):
         changed = True
