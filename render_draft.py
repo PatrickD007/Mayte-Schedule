@@ -40,9 +40,15 @@ def load_entries() -> list[Entry]:
 
 def main():
     entries = load_entries()
-    if not any(e.tag for e in entries):
+    today = date_cls.today()
+    # schedule.json also keeps completed turnovers around (as history for the
+    # room calendars) -- exclude those from the actual message the same way
+    # index.html's "Upcoming" list does: a real cancellation still shows once
+    # even if its date has passed, everything else has to still be upcoming.
+    upcoming = [e for e in entries if e.date >= today or e.tag == "cancelled"]
+    if not any(e.tag for e in upcoming):
         return
-    print(generate_message(entries, MAYTE_URL))
+    print(generate_message(upcoming, MAYTE_URL))
 
 
 if __name__ == "__main__":

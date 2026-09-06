@@ -2,6 +2,16 @@
   "updatedAt": "2026-09-06T00:00:00Z",
   "entries": [
     {
+      "id": "2026-09-04-r1",
+      "date": "2026-09-04",
+      "kind": "turnover",
+      "room": "1",
+      "tag": null,
+      "oldDate": null,
+      "icalUid": "1418fb94e984-d4eb816702172522e0c86eceb51a93bc@airbnb.com",
+      "checkIn": "2026-08-24"
+    },
+    {
       "id": "2026-09-07-r1",
       "date": "2026-09-07",
       "kind": "turnover",

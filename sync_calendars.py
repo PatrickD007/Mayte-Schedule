@@ -17,8 +17,10 @@ Rules (see PROJECT_PLAN.md for full context):
       been told any version of it yet, or oldDate is already anchored correctly)
     - otherwise (already-sent baseline) -> tag "update", oldDate = previous date
 - A previously-seen UID disappears from the feed:
-    - if its checkout date has already passed -> delete outright; Airbnb's feed
-      naturally drops completed stays, this isn't a real cancellation
+    - if its checkout date has already passed -> leave it alone; Airbnb's feed
+      naturally drops completed stays, this isn't a real cancellation, and the
+      entry stays as history for the room calendars (message generation
+      filters past-dated, untagged entries back out -- see render_draft.py)
     - if it was tagged "new" (never sent) -> delete outright, nothing to tell Mayte
     - otherwise -> tag "cancelled" (kept so it shows once in the next draft)
 - GC entries are generated on a fixed 14-day cadence anchored at 2026-09-16,
@@ -137,9 +139,9 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
             continue
         if e["date"] < today.isoformat():
             # Checkout day already passed -- Airbnb's own feed drops completed
-            # stays on its own, so a disappearance here isn't a real cancellation.
-            entries.remove(e)
-            changed = True
+            # stays on its own, so a disappearance here isn't a real
+            # cancellation. Leave it as-is; it's kept as history for the
+            # room calendars.
             continue
         if e["tag"] == "new":
             entries.remove(e)

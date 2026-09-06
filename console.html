@@ -307,7 +307,14 @@ Promise.all([
   fetch("history.json?_=" + Date.now()).then(r => r.json()).catch(() => ({sent: []})),
 ]).then(([sched, hist]) => {
   const entries = sched.entries;
-  const hasChanges = entries.some(e => e.tag);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayIso = toIso(today);
+  // schedule.json also keeps completed turnovers around (as history for the
+  // room calendars) -- exclude those from the actual draft, same rule as
+  // index.html's "Upcoming" list: a real cancellation still shows once even
+  // if its date has passed, everything else has to still be upcoming.
+  const upcoming = entries.filter(e => e.date >= todayIso || e.tag === "cancelled");
+  const hasChanges = upcoming.some(e => e.tag);
   const card = document.getElementById("draftCard");
   const banner = document.getElementById("draftBanner");
   card.classList.toggle("has-changes", hasChanges);
@@ -315,9 +322,9 @@ Promise.all([
   document.getElementById("copyBtn").hidden = !hasChanges;
   document.getElementById("howto").hidden = !hasChanges;
   if (hasChanges){
-    const n = entries.filter(e => e.tag).length;
+    const n = upcoming.filter(e => e.tag).length;
     document.getElementById("draftBannerText").textContent = `${n} change${n===1?"":"s"} ready to send`;
-    document.getElementById("draftText").textContent = generateMessage(entries);
+    document.getElementById("draftText").textContent = generateMessage(upcoming);
   } else {
     document.getElementById("draftText").textContent = "Nothing new since your last update to Mayte.";
   }
