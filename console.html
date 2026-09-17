@@ -157,7 +157,7 @@
     <div class="draft-banner" id="draftBanner" hidden><span class="dot"></span><span id="draftBannerText"></span></div>
     <div class="draft-text" id="draftText">Loading…</div>
     <button class="primary" id="copyBtn" hidden>Copy message</button>
-    <div class="howto" id="howto" hidden>To make a change: tell Claude in chat (e.g. "move the 9/16 GC to 9/18") — it'll update this page directly. Once you've actually sent this message to Mayte, tell Claude "sent it" so it can log it and clear these tags.</div>
+    <div class="howto" id="howto" hidden>To make a change: tell Claude in chat (e.g. "move the 9/16 GC to 9/18") — it'll update this page directly. Once you've actually sent this message to Mayte, tell Claude "sent it" so it can log it and clear this draft — Mayte's dashboard keeps the highlight until the changeover actually happens.</div>
   </div>
 
   <h2>Schedule</h2>
@@ -309,11 +309,15 @@ Promise.all([
   const entries = sched.entries;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const todayIso = toIso(today);
-  // schedule.json also keeps completed turnovers around (as history for the
-  // room calendars) -- exclude those from the actual draft, same rule as
-  // index.html's "Upcoming" list: a real cancellation still shows once even
-  // if its date has passed, everything else has to still be upcoming.
-  const upcoming = entries.filter(e => e.date >= todayIso || e.tag === "cancelled");
+  // An entry's tag alone drives Mayte's own dashboard (Schedule list and
+  // room calendars below use raw `entries`) and isn't cleared just because
+  // Patrick confirms he's texted her -- she still needs to see it. So for
+  // THIS draft only, treat an already-confirmed entry as untagged; schedule.json
+  // also keeps completed turnovers around as calendar history, so exclude
+  // those too, same rule as index.html's "Upcoming" list (a real cancellation
+  // still shows once even past its date, everything else has to be upcoming).
+  const messageEntries = entries.map(e => e.sentToPatrick ? {...e, tag: null, oldDate: null} : e);
+  const upcoming = messageEntries.filter(e => e.date >= todayIso || e.tag === "cancelled");
   const hasChanges = upcoming.some(e => e.tag);
   const card = document.getElementById("draftCard");
   const banner = document.getElementById("draftBanner");

@@ -5,9 +5,14 @@ the GitHub Actions workflow to put the complete draft in the ntfy
 notification body, so tapping it (no click URL set) copies the whole
 message to the clipboard.
 
+An entry's `tag` alone drives Mayte's own dashboard and isn't cleared when
+Patrick confirms he's texted her (see sync_calendars.py's docstring) -- so
+for THIS message, an entry already marked sentToPatrick is treated as
+untagged, even though its raw tag in schedule.json is left alone.
+
 Usage: python render_draft.py
 Prints the full message to stdout if there's at least one pending
-(tagged) entry; prints nothing and exits 0 otherwise.
+(tagged, unconfirmed) entry; prints nothing and exits 0 otherwise.
 """
 
 import json
@@ -28,12 +33,13 @@ def load_entries() -> list[Entry]:
         data = json.load(f)
     entries = []
     for e in data["entries"]:
+        confirmed = e.get("sentToPatrick")
         entries.append(Entry(
             date=_parse_date(e["date"]),
             kind=e["kind"],
             room=e.get("room"),
-            tag=e.get("tag"),
-            old_date=_parse_date(e["oldDate"]) if e.get("oldDate") else None,
+            tag=None if confirmed else e.get("tag"),
+            old_date=_parse_date(e["oldDate"]) if e.get("oldDate") and not confirmed else None,
         ))
     return entries
 

@@ -11,20 +11,33 @@ Rules (see PROJECT_PLAN.md for full context):
 - The date on a turnover entry is the checkout day (DTEND of a "Reserved" VEVENT)
   -- the day Mayte's team must be on site. Only SUMMARY:Reserved events count;
   "Airbnb (Not available)" blocks are host-side and not real bookings.
-- A UID newly seen -> add as tag "new".
+- A UID newly seen -> add as tag "new", sentToPatrick False.
 - A UID's checkout date changes:
     - if it's already tagged "new" or "update", just move its date (Mayte hasn't
       been told any version of it yet, or oldDate is already anchored correctly)
     - otherwise (already-sent baseline) -> tag "update", oldDate = previous date
+    - either way, sentToPatrick resets to False -- it's fresh unconfirmed news
 - A previously-seen UID disappears from the feed:
     - if its checkout date has already passed -> leave it alone; Airbnb's feed
       naturally drops completed stays, this isn't a real cancellation, and the
       entry stays as history for the room calendars (message generation
       filters past-dated, untagged entries back out -- see render_draft.py)
     - if it was tagged "new" (never sent) -> delete outright, nothing to tell Mayte
-    - otherwise -> tag "cancelled" (kept so it shows once in the next draft)
+    - otherwise -> tag "cancelled", sentToPatrick False (kept so it shows once)
 - GC entries are generated on a fixed 14-day cadence anchored at 2026-09-16,
   untagged (not "news"), extended automatically ~2 months ahead of today.
+
+Two-stage "handled" lifecycle (per Patrick's 2026-09 request): a `tag` alone
+drives Mayte's own dashboard (the NEW/UPDATE/CANCELLED highlight on her page
+and the room calendars) and is deliberately NOT cleared just because Patrick
+tells Claude he texted her -- she still needs to actually see it. Instead,
+Claude sets `sentToPatrick: true` on that confirmation (a separate, manual
+edit outside this script), which only suppresses it from Patrick's own future
+drafts/notifications (see render_draft.py). Once BOTH sentToPatrick is true
+AND the date has passed (the changeover actually happened), this script's
+expire_resolved_tags() settles the entry: a new/update tag clears to plain
+history, a cancelled entry is deleted outright (it never happened, so unlike
+a real stay it has no history value).
 """
 
 import json
@@ -110,7 +123,7 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
                 "id": f"{fe['checkout']}-r{room}-{fe['uid'][:8]}", "date": fe["checkout"],
                 "checkIn": fe["checkin"],
                 "kind": "turnover", "room": room, "tag": "new", "oldDate": None,
-                "icalUid": fe["uid"],
+                "icalUid": fe["uid"], "sentToPatrick": False,
             })
             changed = True
             notes.append(f"Room {room}: new booking, checkout {fmt(fe['checkout'])}")
@@ -129,6 +142,7 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
                 existing["oldDate"] = existing["date"]
                 existing["date"] = fe["checkout"]
                 existing["tag"] = "update"
+            existing["sentToPatrick"] = False
             changed = True
             notes.append(f"Room {room}: checkout moved to {fmt(fe['checkout'])}")
 
@@ -148,9 +162,30 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
             changed = True
         elif e["tag"] != "cancelled":
             e["tag"] = "cancelled"
+            e["sentToPatrick"] = False
             changed = True
             notes.append(f"Room {room}: cancelled (was {fmt(e['date'])})")
 
+    return changed
+
+
+def expire_resolved_tags(entries: list[dict], today: date) -> bool:
+    """Once Patrick has confirmed sending a tagged entry (sentToPatrick) and
+    its date has passed, it settles: new/update clears to plain history (a
+    normal past reservation, no longer highlighted); cancelled is removed
+    outright (it never happened, so unlike a real stay it's not history)."""
+    changed = False
+    for e in list(entries):
+        if e.get("kind") != "turnover" or not e.get("tag") or not e.get("sentToPatrick"):
+            continue
+        if e["date"] >= today.isoformat():
+            continue
+        if e["tag"] == "cancelled":
+            entries.remove(e)
+        else:
+            e["tag"] = None
+            e["sentToPatrick"] = False
+        changed = True
     return changed
 
 
@@ -171,6 +206,8 @@ def main():
         events = parse_vevents(fetch(url))
         if sync_room(entries, room, events, notes, today):
             changed = True
+    if expire_resolved_tags(entries, today):
+        changed = True
     if ensure_gc_entries(entries, today):
         changed = True
 
