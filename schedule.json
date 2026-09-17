@@ -152,7 +152,7 @@
       "tag": "new",
       "oldDate": null,
       "icalUid": "1418fb94e984-905d5eb56f3a1551260c5d275ffc54cf@airbnb.com",
-      "sentToPatrick": false
+      "sentToPatrick": true
     },
     {
       "id": "2026-10-01-r1-1418fb94",
@@ -163,7 +163,7 @@
       "tag": "new",
       "oldDate": null,
       "icalUid": "1418fb94e984-4c02b9db0ec1d94b95c0eb0377788da1@airbnb.com",
-      "sentToPatrick": false
+      "sentToPatrick": true
     }
   ]
 }

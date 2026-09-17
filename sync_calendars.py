@@ -27,17 +27,20 @@ Rules (see PROJECT_PLAN.md for full context):
 - GC entries are generated on a fixed 14-day cadence anchored at 2026-09-16,
   untagged (not "news"), extended automatically ~2 months ahead of today.
 
-Two-stage "handled" lifecycle (per Patrick's 2026-09 request): a `tag` alone
+Two-stage "handled" lifecycle (per Patrick's 2026-09 requests): a `tag` alone
 drives Mayte's own dashboard (the NEW/UPDATE/CANCELLED highlight on her page
-and the room calendars) and is deliberately NOT cleared just because Patrick
+and the room calendars) and is deliberately NOT cleared the moment Patrick
 tells Claude he texted her -- she still needs to actually see it. Instead,
-Claude sets `sentToPatrick: true` on that confirmation (a separate, manual
-edit outside this script), which only suppresses it from Patrick's own future
-drafts/notifications (see render_draft.py). Once BOTH sentToPatrick is true
-AND the date has passed (the changeover actually happened), this script's
-expire_resolved_tags() settles the entry: a new/update tag clears to plain
-history, a cancelled entry is deleted outright (it never happened, so unlike
-a real stay it has no history value).
+running mark_sent.py (Claude does this on Patrick's "I updated Mayte")
+marks the just-communicated entries `sentToPatrick: true`, which only
+suppresses THEM from Patrick's own future drafts/notifications (see
+render_draft.py) -- Mayte's dashboard is unaffected. But Mayte should only
+ever see the LAST communicated update highlighted, so that same run also
+immediately settles (see settle_entry) any OTHER entry that was already
+`sentToPatrick` from an earlier confirmation -- it's been superseded. As a
+backstop for whatever's still outstanding when nothing new comes along to
+supersede it, this script's expire_resolved_tags() also settles any
+confirmed entry once its date actually passes.
 """
 
 import json
@@ -169,22 +172,30 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
     return changed
 
 
+def settle_entry(e: dict, entries: list[dict]) -> None:
+    """Settles an entry that's done being "news": new/update clears to plain
+    history (a normal past reservation, no longer highlighted); cancelled is
+    removed from `entries` outright, since it never happened and isn't real
+    history the way a completed stay is. Shared by expire_resolved_tags()
+    (triggered by the date passing) and mark_sent.py (triggered by a newer
+    confirmation superseding it -- see that script's docstring)."""
+    if e["tag"] == "cancelled":
+        entries.remove(e)
+    else:
+        e["tag"] = None
+        e["sentToPatrick"] = False
+
+
 def expire_resolved_tags(entries: list[dict], today: date) -> bool:
     """Once Patrick has confirmed sending a tagged entry (sentToPatrick) and
-    its date has passed, it settles: new/update clears to plain history (a
-    normal past reservation, no longer highlighted); cancelled is removed
-    outright (it never happened, so unlike a real stay it's not history)."""
+    its date has passed, settle it (see settle_entry)."""
     changed = False
     for e in list(entries):
         if e.get("kind") != "turnover" or not e.get("tag") or not e.get("sentToPatrick"):
             continue
         if e["date"] >= today.isoformat():
             continue
-        if e["tag"] == "cancelled":
-            entries.remove(e)
-        else:
-            e["tag"] = None
-            e["sentToPatrick"] = False
+        settle_entry(e, entries)
         changed = True
     return changed
 

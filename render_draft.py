@@ -28,11 +28,13 @@ def _parse_date(iso: str) -> date_cls:
     return date_cls(y, m, d)
 
 
-def load_entries() -> list[Entry]:
-    with open("schedule.json") as f:
-        data = json.load(f)
+def render(raw_entries: list[dict]) -> str | None:
+    """Renders the draft message from schedule.json's raw entry dicts, or
+    None if there's nothing pending. Shared by this script and mark_sent.py
+    (which needs the exact text to log to history.json before mutating
+    anything)."""
     entries = []
-    for e in data["entries"]:
+    for e in raw_entries:
         confirmed = e.get("sentToPatrick")
         entries.append(Entry(
             date=_parse_date(e["date"]),
@@ -41,11 +43,7 @@ def load_entries() -> list[Entry]:
             tag=None if confirmed else e.get("tag"),
             old_date=_parse_date(e["oldDate"]) if e.get("oldDate") and not confirmed else None,
         ))
-    return entries
 
-
-def main():
-    entries = load_entries()
     today = date_cls.today()
     # schedule.json also keeps completed turnovers around (as history for the
     # room calendars) -- exclude those from the actual message the same way
@@ -53,8 +51,16 @@ def main():
     # even if its date has passed, everything else has to still be upcoming.
     upcoming = [e for e in entries if e.date >= today or e.tag == "cancelled"]
     if not any(e.tag for e in upcoming):
-        return
-    print(generate_message(upcoming, MAYTE_URL))
+        return None
+    return generate_message(upcoming, MAYTE_URL)
+
+
+def main():
+    with open("schedule.json") as f:
+        data = json.load(f)
+    message = render(data["entries"])
+    if message:
+        print(message)
 
 
 if __name__ == "__main__":
