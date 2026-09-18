@@ -18,9 +18,17 @@ rather than waiting for its date to pass.
 Usage: python mark_sent.py
 Prints the message that was marked as sent, or a note if nothing was
 pending. Run from the repo root (schedule.json alongside this file).
+
+Pulls from origin first, before reading schedule.json. The hourly GitHub
+Actions sync can land a change between when Claude last looked at this
+repo and when Patrick says "I updated Mayte" -- without this, that race
+makes the script read a stale schedule.json and wrongly report nothing
+pending (hit for real 2026-09-18). Raises if the pull fails (e.g. a dirty
+working tree) rather than silently proceeding on stale data.
 """
 
 import json
+import subprocess
 from datetime import date as date_cls
 from datetime import datetime, timezone
 
@@ -28,7 +36,16 @@ from render_draft import render
 from sync_calendars import settle_entry
 
 
+def git_pull():
+    result = subprocess.run(
+        ["git", "pull", "--ff-only"], capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"git pull failed: {result.stderr.strip()}")
+
+
 def main():
+    git_pull()
     with open("schedule.json") as f:
         data = json.load(f)
     entries = data["entries"]
