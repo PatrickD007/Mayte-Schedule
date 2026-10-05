@@ -26,6 +26,17 @@ Rules (see PROJECT_PLAN.md for full context):
     - otherwise -> tag "cancelled", sentToPatrick False (kept so it shows once)
 - GC entries are generated on a fixed 14-day cadence anchored at 2026-09-16,
   untagged (not "news"), extended automatically ~2 months ahead of today.
+- A turnover entry can carry `manualDate: true` -- set by hand (Claude edits
+  schedule.json directly) when Patrick overrides the actual visit day away
+  from Airbnb's real checkout date (e.g. he blocks the room himself so
+  Mayte's team comes a day later than the reservation's real end date).
+  While set, this script leaves that UID's date alone entirely -- both the
+  date-change sync above and the disappearance-handling loop skip it -- so
+  a hand-edited date survives future syncs instead of being silently synced
+  back to the feed's real checkout, and a feed disappearance (expected,
+  since Airbnb's own checkout already passed) isn't misread as a
+  cancellation. Cleared automatically once the entry settles (see
+  settle_entry) -- found/fixed 2026-10-05, see PROJECT_PLAN.md.
 
 Two-stage "handled" lifecycle (per Patrick's 2026-09 requests): a `tag` alone
 drives Mayte's own dashboard (the NEW/UPDATE/CANCELLED highlight on her page
@@ -138,7 +149,7 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
             existing["checkIn"] = fe["checkin"]
             changed = True
 
-        if existing["date"] != fe["checkout"]:
+        if existing["date"] != fe["checkout"] and not existing.get("manualDate"):
             if existing["tag"] in ("new", "update"):
                 existing["date"] = fe["checkout"]
             else:
@@ -151,6 +162,13 @@ def sync_room(entries: list[dict], room: str, feed_events: list[dict], notes: li
 
     for e in list(entries):
         if e["room"] != room or e["kind"] != "turnover" or not e.get("icalUid"):
+            continue
+        if e.get("manualDate"):
+            # Frozen from the feed entirely -- Airbnb's real checkout may
+            # disappear (or already have passed) while the manually-chosen
+            # visit date is still in the future, which would otherwise read
+            # as a false cancellation below. Settles normally once sent and
+            # its (overridden) date passes, same as any other entry.
             continue
         if e["icalUid"] in seen_uids:
             continue
@@ -184,6 +202,7 @@ def settle_entry(e: dict, entries: list[dict]) -> None:
     else:
         e["tag"] = None
         e["sentToPatrick"] = False
+        e.pop("manualDate", None)
 
 
 def expire_resolved_tags(entries: list[dict], today: date) -> bool:
