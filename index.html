@@ -72,7 +72,7 @@
 
   .hero{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:22px}
   .hero .eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700}
-  .hero .row{display:flex; align-items:baseline; gap:12px; margin-top:8px}
+  .hero .row{display:flex; align-items:baseline; flex-wrap:wrap; gap:12px; margin-top:8px}
   .hero .date{font-size:34px; font-weight:800; letter-spacing:-0.02em}
 
   .section-label{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700; margin:0 0 10px 2px}
@@ -80,6 +80,8 @@
   .list{display:flex; flex-direction:column; gap:8px}
   .item{display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px}
   .item .date{font-size:17px; font-weight:700; width:44px; flex:0 0 auto}
+  .visits{display:flex; flex-wrap:wrap; align-items:center; gap:8px; flex:1}
+  .visit{display:inline-flex; align-items:center; gap:6px}
   .chip{display:inline-flex; align-items:center; gap:5px; font-size:14px; font-weight:800; padding:5px 11px; border-radius:999px; flex:0 0 auto}
   .chip.r1{background:var(--room1-bg); color:var(--room1)}
   .chip.r2{background:var(--room2-bg); color:var(--room2)}
@@ -87,12 +89,12 @@
   .chip.gc{background:var(--gc-bg); color:var(--gc)}
   .chip.off{background:var(--off-bg); color:var(--off)}
   .old-date{text-decoration:line-through; opacity:.55; font-weight:600; font-size:13px}
-  .tag{margin-left:auto; font-size:11px; font-weight:800; letter-spacing:.03em; padding:4px 9px; border-radius:999px; flex:0 0 auto}
+  .tag{font-size:11px; font-weight:800; letter-spacing:.03em; padding:4px 9px; border-radius:999px; flex:0 0 auto}
   .tag.new{background:var(--new-bg); color:var(--new)}
   .tag.update{background:var(--update-bg); color:var(--update)}
   .tag.cancelled{background:var(--cancelled-bg); color:var(--cancelled)}
-  .item.is-cancelled{opacity:.6}
-  .item.is-cancelled .date, .item.is-cancelled .chip{text-decoration:line-through; text-decoration-thickness:2px}
+  .visit.is-cancelled{opacity:.6}
+  .visit.is-cancelled .chip{text-decoration:line-through; text-decoration-thickness:2px}
   .empty{color:var(--muted); font-size:14px; padding:6px 2px}
 
   .cal-room-card{border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:14px; background:var(--surface)}
@@ -230,6 +232,15 @@ function renderCalendars(entries){
   }
 }
 
+function groupByDate(list){
+  const map = new Map();
+  for (const e of list){
+    if (!map.has(e.date)) map.set(e.date, []);
+    map.get(e.date).push(e);
+  }
+  return [...map.values()];
+}
+
 fetch("schedule.json?_=" + Date.now())
   .then(r => r.json())
   .then(data => {
@@ -242,24 +253,31 @@ fetch("schedule.json?_=" + Date.now())
     if (!upcoming.length){
       list.innerHTML = '<div class="empty">Nothing scheduled.</div>';
     } else {
-      for (const e of upcoming){
+      for (const group of groupByDate(upcoming)){
         const row = document.createElement("div");
-        row.className = "item" + (e.tag === "cancelled" ? " is-cancelled" : "");
-        row.innerHTML = `
-          <div class="date">${fmtDate(e.date)}</div>
-          <span class="chip ${chipClass(e)}">${chipLabel(e)}</span>
-          ${e.tag === "update" && e.oldDate ? `<span class="old-date">${fmtDate(e.oldDate)}</span>` : ""}
-          ${e.tag ? `<span class="tag ${e.tag}">${e.tag.toUpperCase()}</span>` : ""}
-        `;
+        row.className = "item";
+        const visits = group.map(e => `
+          <span class="visit${e.tag === "cancelled" ? " is-cancelled" : ""}">
+            <span class="chip ${chipClass(e)}">${chipLabel(e)}</span>
+            ${e.tag === "update" && e.oldDate ? `<span class="old-date">${fmtDate(e.oldDate)}</span>` : ""}
+            ${e.tag ? `<span class="tag ${e.tag}">${e.tag.toUpperCase()}</span>` : ""}
+          </span>
+        `).join("");
+        row.innerHTML = `<div class="date">${fmtDate(group[0].date)}</div><div class="visits">${visits}</div>`;
         list.appendChild(row);
       }
     }
 
-    const next = entries.find(e => e.date >= today && e.tag !== "cancelled");
+    const upcomingActive = entries.filter(e => e.date >= today && e.tag !== "cancelled");
     const heroRow = document.getElementById("heroRow");
-    heroRow.innerHTML = next
-      ? `<div class="date">${fmtDate(next.date)}</div><span class="chip ${chipClass(next)}">${chipLabel(next)}</span>`
-      : '<span class="empty">Nothing upcoming.</span>';
+    if (upcomingActive.length){
+      const nextDate = upcomingActive[0].date;
+      const sameDay = upcomingActive.filter(e => e.date === nextDate);
+      const chips = sameDay.map(e => `<span class="chip ${chipClass(e)}">${chipLabel(e)}</span>`).join("");
+      heroRow.innerHTML = `<div class="date">${fmtDate(nextDate)}</div>${chips}`;
+    } else {
+      heroRow.innerHTML = '<span class="empty">Nothing upcoming.</span>';
+    }
 
     renderCalendars(entries);
   })
