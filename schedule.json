@@ -205,7 +205,7 @@
       "tag": "update",
       "oldDate": "2026-10-05",
       "icalUid": "1418fb94e984-50c938e8f94dfb2e61285c181c59af59@airbnb.com",
-      "sentToPatrick": false,
+      "sentToPatrick": true,
       "manualDate": true
     },
     {
@@ -217,7 +217,7 @@
       "tag": "new",
       "oldDate": null,
       "icalUid": null,
-      "sentToPatrick": false
+      "sentToPatrick": true
     }
   ]
 }
