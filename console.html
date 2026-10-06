@@ -334,7 +334,12 @@ Promise.all([
   }
 
   const list = document.getElementById("scheduleList");
-  const ordered = [...entries].sort((a,b) => a.date.localeCompare(b.date));
+  // Same rule as Mayte's own "Upcoming" list (index.html) and the draft
+  // filtering above -- completed turnovers are kept in schedule.json
+  // indefinitely as calendar history (see sync_calendars.py), but this raw
+  // list shouldn't just grow forever with them.
+  const ordered = entries.filter(e => e.date >= todayIso || e.tag === "cancelled")
+    .sort((a,b) => a.date.localeCompare(b.date));
   list.innerHTML = ordered.length ? "" : '<div class="empty">Nothing scheduled.</div>';
   for (const e of ordered){
     const row = document.createElement("div");
