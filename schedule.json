@@ -134,12 +134,12 @@
     },
     {
       "id": "2026-10-09-r1-1418fb94",
-      "date": "2026-10-09",
+      "date": "2026-10-12",
       "checkIn": "2026-10-01",
       "kind": "turnover",
       "room": "1",
-      "tag": null,
-      "oldDate": null,
+      "tag": "update",
+      "oldDate": "2026-10-09",
       "icalUid": "1418fb94e984-b830b8da787358944b2ad009431e0d2d@airbnb.com",
       "sentToPatrick": false
     },
