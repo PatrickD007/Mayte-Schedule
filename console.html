@@ -189,6 +189,30 @@ function renderLine(e){
   return `- ${line}`;
 }
 
+// This entry's piece of a shared same-date line (see renderGroup) --
+// everything renderLine shows except the date, which the line only states once.
+function segmentFor(e){
+  let seg = labelFor(e);
+  if (e.tag === "cancelled") seg = strike(seg);
+  else if (e.tag === "update" && e.oldDate) seg = `${strike(fmtDate(e.oldDate))} → ${seg}`;
+  if (e.tag) seg += ` (${e.tag.toUpperCase()})`;
+  return seg;
+}
+
+// Renders one line for all entries sharing a date -- a single entry renders
+// exactly as renderLine always has; multiple entries (e.g. a GC day that's
+// also a room changeover) join with " & ", GC/off first then turnovers by
+// room number, each keeping its own tag/old-date/cancelled styling independently.
+function renderGroup(group){
+  if (group.length === 1) return renderLine(group[0]);
+  const ordered = [...group].sort((a, b) => {
+    const aKey = a.kind === "turnover" ? 1 : 0, bKey = b.kind === "turnover" ? 1 : 0;
+    if (aKey !== bKey) return aKey - bKey;
+    return aKey ? Number(a.room) - Number(b.room) : 0;
+  });
+  return `- ${fmtDate(group[0].date)} ${ordered.map(segmentFor).join(" & ")}`;
+}
+
 function roomWord(e){ return e.kind === "gc" ? "General Cleaning" : e.kind === "off" ? "your schedule" : `#${e.room}`; }
 
 function generateHeadline(entries){
@@ -217,7 +241,13 @@ function generateHeadline(entries){
 
 function generateMessage(entries){
   const ordered = [...entries].sort((a,b) => a.date.localeCompare(b.date));
-  const body = ordered.map(renderLine).join("\n");
+  const groups = [];
+  for (const e of ordered){
+    const last = groups[groups.length - 1];
+    if (last && last[0].date === e.date) last.push(e);
+    else groups.push([e]);
+  }
+  const body = groups.map(renderGroup).join("\n");
   return `${generateHeadline(entries)}\n\nSo we have:\n${body}\n\nFull schedule: ${location.origin}${location.pathname.replace(/console\.html$/, "index.html")}`;
 }
 

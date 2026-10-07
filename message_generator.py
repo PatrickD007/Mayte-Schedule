@@ -63,6 +63,38 @@ class Entry:
     def sort_key(self):
         return self.date
 
+    def segment(self) -> str:
+        """This entry's piece of a shared same-date line (see render_group) --
+        everything render() shows except the date, which the line only
+        states once."""
+        label = self.label()
+        if self.tag == "cancelled":
+            seg = strike(label)
+        elif self.tag == "update" and self.old_date:
+            seg = f"{strike(fmt_date(self.old_date))} → {label}"
+        else:
+            seg = label
+        if self.tag:
+            seg = f"{seg} ({self.tag.upper()})"
+        return seg
+
+
+def render_group(entries: list[Entry]) -> str:
+    """Renders one line for all entries sharing a date -- a single entry
+    renders exactly as Entry.render() always has; multiple entries (e.g. a
+    GC day that's also a room changeover) join with ' & ', GC/off first
+    then turnovers by room number, each keeping its own tag/old-date/
+    cancelled styling independently."""
+    if len(entries) == 1:
+        return entries[0].render()
+    ordered = sorted(
+        entries,
+        key=lambda e: (1, int(e.room)) if e.kind == "turnover" else (0, 0),
+    )
+    date_str = fmt_date(entries[0].date)
+    segments = " & ".join(e.segment() for e in ordered)
+    return f"- {date_str} {segments}"
+
 
 def room_word(e: Entry) -> str:
     if e.kind == "gc":
@@ -102,7 +134,13 @@ def generate_headline(entries: list[Entry]) -> str:
 
 def generate_message(entries: list[Entry], dashboard_url: str) -> str:
     ordered = sorted(entries, key=Entry.sort_key)
-    lines = [e.render() for e in ordered]
+    groups: list[list[Entry]] = []
+    for e in ordered:
+        if groups and groups[-1][0].date == e.date:
+            groups[-1].append(e)
+        else:
+            groups.append([e])
+    lines = [render_group(g) for g in groups]
     body = "\n".join(lines)
     return (
         f"{generate_headline(entries)}\n\n"
@@ -144,3 +182,15 @@ if __name__ == "__main__":
     demo = [e for e in demo if not (e.date == date(2026, 9, 15) and e.room == "1" and e.tag is None)]
     demo = [e for e in demo if not (e.date == date(2026, 9, 13) and e.room == "2" and e.tag is None)]
     print(generate_message(demo, "https://claude.ai/mayte-schedule-placeholder"))
+
+    # 3. Same-date entries share one row with " & " (e.g. a GC day that's
+    # also a room changeover).
+    print("\n=== Same-date entries merged onto one row ===")
+    merged = [
+        Entry(date(2026, 10, 14), "gc"),
+        Entry(date(2026, 10, 14), "turnover", room="2", tag="new"),
+        Entry(date(2026, 10, 9), "turnover", room="1"),
+        Entry(date(2026, 10, 9), "turnover", room="4", tag="new"),
+        Entry(date(2026, 10, 19), "turnover", room="2"),
+    ]
+    print(generate_message(merged, "https://claude.ai/mayte-schedule-placeholder"))
