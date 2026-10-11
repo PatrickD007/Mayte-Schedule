@@ -92,8 +92,10 @@
 
   .list{display:flex; flex-direction:column; gap:7px}
   .item{display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px}
-  .item.is-cancelled{opacity:.6}
   .item .date{font-size:15px; font-weight:700; width:42px; flex:0 0 auto}
+  .visits{display:flex; flex-wrap:wrap; align-items:center; gap:8px; flex:1}
+  .visit{display:inline-flex; align-items:center; gap:6px}
+  .visit.is-cancelled{opacity:.6}
   .chip{display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:800; padding:4px 10px; border-radius:999px; flex:0 0 auto}
   .chip.r1{background:var(--room1-bg); color:var(--room1)}
   .chip.r2{background:var(--room2-bg); color:var(--room2)}
@@ -253,6 +255,15 @@ function generateMessage(entries){
 
 const ROOM_NAMES = {"1": "Peaceful Room", "2": "Primary Suite", "4": "Peaceful Suite"};
 
+function groupByDate(list){
+  const map = new Map();
+  for (const e of list){
+    if (!map.has(e.date)) map.set(e.date, []);
+    map.get(e.date).push(e);
+  }
+  return [...map.values()];
+}
+
 function isoDate(year, monthIdx, day){
   return `${year}-${String(monthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
@@ -371,15 +382,17 @@ Promise.all([
   const ordered = entries.filter(e => e.date >= todayIso || e.tag === "cancelled")
     .sort((a,b) => a.date.localeCompare(b.date));
   list.innerHTML = ordered.length ? "" : '<div class="empty">Nothing scheduled.</div>';
-  for (const e of ordered){
+  for (const group of groupByDate(ordered)){
     const row = document.createElement("div");
-    row.className = "item" + (e.tag === "cancelled" ? " is-cancelled" : "");
-    row.innerHTML = `
-      <div class="date">${fmtDate(e.date)}</div>
-      <span class="chip ${chipClass(e)}">${chipLabel(e)}</span>
-      ${e.tag === "update" && e.oldDate ? `<span class="old-date">${fmtDate(e.oldDate)}</span>` : ""}
-      ${e.tag ? `<span class="tag ${e.tag}">${e.tag.toUpperCase()}</span>` : ""}
-    `;
+    row.className = "item";
+    const visits = group.map(e => `
+      <span class="visit${e.tag === "cancelled" ? " is-cancelled" : ""}">
+        <span class="chip ${chipClass(e)}">${chipLabel(e)}</span>
+        ${e.tag === "update" && e.oldDate ? `<span class="old-date">${fmtDate(e.oldDate)}</span>` : ""}
+        ${e.tag ? `<span class="tag ${e.tag}">${e.tag.toUpperCase()}</span>` : ""}
+      </span>
+    `).join("");
+    row.innerHTML = `<div class="date">${fmtDate(group[0].date)}</div><div class="visits">${visits}</div>`;
     list.appendChild(row);
   }
 
