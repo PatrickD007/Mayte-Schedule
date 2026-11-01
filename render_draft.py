@@ -35,6 +35,10 @@ def render(raw_entries: list[dict]) -> str | None:
     anything)."""
     entries = []
     for e in raw_entries:
+        if e["kind"] == "off":
+            # Mayte's own days off are shown on the dashboards but never
+            # texted to her -- she already knows her own vacation days.
+            continue
         confirmed = e.get("sentToPatrick")
         entries.append(Entry(
             date=_parse_date(e["date"]),

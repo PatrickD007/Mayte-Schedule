@@ -357,7 +357,10 @@ Promise.all([
   // also keeps completed turnovers around as calendar history, so exclude
   // those too, same rule as index.html's "Upcoming" list (a real cancellation
   // still shows once even past its date, everything else has to be upcoming).
-  const messageEntries = entries.map(e => e.sentToPatrick ? {...e, tag: null, oldDate: null} : e);
+  // Mayte's days off are shown on the Schedule list/dashboard (raw `entries`
+  // below) but never texted to her -- she already knows her own vacation
+  // days, so they're excluded from the draft/message entirely.
+  const messageEntries = entries.filter(e => e.kind !== "off").map(e => e.sentToPatrick ? {...e, tag: null, oldDate: null} : e);
   const upcoming = messageEntries.filter(e => e.date >= todayIso || e.tag === "cancelled");
   const hasChanges = upcoming.some(e => e.tag);
   const card = document.getElementById("draftCard");

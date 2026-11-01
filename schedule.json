@@ -312,6 +312,51 @@
       "oldDate": null,
       "icalUid": "1418fb94e984-47896d08534d275966225350dccba85e@airbnb.com",
       "sentToPatrick": false
+    },
+    {
+      "id": "2026-11-26-off",
+      "date": "2026-11-26",
+      "kind": "off",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    },
+    {
+      "id": "2026-11-27-off",
+      "date": "2026-11-27",
+      "kind": "off",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    },
+    {
+      "id": "2026-12-24-off",
+      "date": "2026-12-24",
+      "kind": "off",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    },
+    {
+      "id": "2026-12-25-off",
+      "date": "2026-12-25",
+      "kind": "off",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
+    },
+    {
+      "id": "2027-01-01-off",
+      "date": "2027-01-01",
+      "kind": "off",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
     }
   ]
 }

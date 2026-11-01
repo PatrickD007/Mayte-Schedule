@@ -268,7 +268,7 @@ fetch("schedule.json?_=" + Date.now())
       }
     }
 
-    const upcomingActive = entries.filter(e => e.date >= today && e.tag !== "cancelled");
+    const upcomingActive = entries.filter(e => e.date >= today && e.tag !== "cancelled" && e.kind !== "off");
     const heroRow = document.getElementById("heroRow");
     if (upcomingActive.length){
       const nextDate = upcomingActive[0].date;
