@@ -10,7 +10,7 @@
     --bg:#F3EFE7; --surface:#FFFFFF; --surface-2:#EDE7DA;
     --ink:#2A2520; --muted:#746C60; --line:#DED5C4;
     --room1:#1F7A8C; --room2:#B8791A; --room4:#7A3B6D;
-    --gc:#5B6B73; --off:#8A8378; --gc-bg:#E7E2D8; --off-bg:#E9E4DA;
+    --gc:#5B6B73; --gc-bg:#E7E2D8; --vacation:#C0392B; --vacation-bg:#F6DEDC;
     --new:#3F7A4E; --new-bg:#E4EFE3;
     --update:#35507A; --update-bg:#E3E8F0;
     --cancelled:#A6402F; --cancelled-bg:#F3E3DF;
@@ -26,7 +26,7 @@
       --bg:#1E1A16; --surface:#2A2520; --surface-2:#332D26;
       --ink:#F2EEE6; --muted:#B3AA9C; --line:#453D33;
       --room1:#5BB6C7; --room2:#E0A63E; --room4:#B879AA;
-      --gc:#9AA9B0; --off:#B0A996; --gc-bg:#333B3F; --off-bg:#3A362D;
+      --gc:#9AA9B0; --gc-bg:#333B3F; --vacation:#FF8A80; --vacation-bg:#45201D;
       --new:#79C08C; --new-bg:#2C3B2E;
       --update:#8AA6D6; --update-bg:#2A3245;
       --cancelled:#E08A78; --cancelled-bg:#402A26;
@@ -42,7 +42,7 @@
     --bg:#1E1A16; --surface:#2A2520; --surface-2:#332D26;
     --ink:#F2EEE6; --muted:#B3AA9C; --line:#453D33;
     --room1:#5BB6C7; --room2:#E0A63E; --room4:#B879AA;
-    --gc:#9AA9B0; --off:#B0A996; --gc-bg:#333B3F; --off-bg:#3A362D;
+    --gc:#9AA9B0; --gc-bg:#333B3F; --vacation:#FF8A80; --vacation-bg:#45201D;
     --new:#79C08C; --new-bg:#2C3B2E;
     --update:#8AA6D6; --update-bg:#2A3245;
     --cancelled:#E08A78; --cancelled-bg:#402A26;
@@ -101,7 +101,7 @@
   .chip.r2{background:var(--room2-bg); color:var(--room2)}
   .chip.r4{background:var(--room4-bg); color:var(--room4)}
   .chip.gc{background:var(--gc-bg); color:var(--gc)}
-  .chip.off{background:var(--off-bg); color:var(--off)}
+  .chip.vacation{background:var(--vacation-bg); color:var(--vacation)}
   .tag{font-size:10.5px; font-weight:800; letter-spacing:.03em; padding:3px 8px; border-radius:999px; flex:0 0 auto}
   .tag.new{background:var(--new-bg); color:var(--new)}
   .tag.update{background:var(--update-bg); color:var(--update)}
@@ -178,9 +178,9 @@
 const STRIKE = "̶";
 const strike = s => s.split("").map(c => c + STRIKE).join("");
 const fmtDate = iso => { const [y,m,d] = iso.split("-").map(Number); return `${m}/${d}`; };
-const labelFor = e => e.kind === "off" ? "Mayte Off" : e.kind === "gc" ? "GC" : `#${e.room}`;
-const chipClass = e => e.kind === "gc" ? "gc" : e.kind === "off" ? "off" : "r" + e.room;
-const chipLabel = e => e.kind === "gc" ? "GC" : e.kind === "off" ? "Off" : e.room;
+const labelFor = e => e.kind === "off" ? "Mayte Vacation" : e.kind === "gc" ? "GC" : `#${e.room}`;
+const chipClass = e => e.kind === "gc" ? "gc" : e.kind === "off" ? "vacation" : "r" + e.room;
+const chipLabel = e => e.kind === "gc" ? "GC" : e.kind === "off" ? "Mayte Vacation" : e.room;
 
 function renderLine(e){
   const dateStr = fmtDate(e.date);
