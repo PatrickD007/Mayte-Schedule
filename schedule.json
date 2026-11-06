@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-04T00:00:00Z",
+  "updatedAt": "2026-11-06T00:00:00Z",
   "entries": [
     {
       "id": "2026-09-04-r1",
@@ -379,6 +379,15 @@
       "oldDate": null,
       "icalUid": "1418fb94e984-f884bbd43cfddd688c19b9d5fb97b89d@airbnb.com",
       "sentToPatrick": true
+    },
+    {
+      "id": "2027-01-20-gc",
+      "date": "2027-01-20",
+      "kind": "gc",
+      "room": null,
+      "tag": null,
+      "oldDate": null,
+      "icalUid": null
     }
   ]
 }
