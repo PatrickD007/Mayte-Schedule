@@ -398,7 +398,7 @@
       "tag": "update",
       "oldDate": "2026-11-22",
       "icalUid": "1418fb94e984-6b99330c58041396580798af457c0147@airbnb.com",
-      "sentToPatrick": false,
+      "sentToPatrick": true,
       "manualDate": true
     },
     {
