@@ -407,10 +407,10 @@
       "checkIn": "2026-11-20",
       "kind": "turnover",
       "room": "1",
-      "tag": "new",
+      "tag": null,
       "oldDate": null,
       "icalUid": "1418fb94e984-ace8a7abf253c97818850216dbc5764a@airbnb.com",
-      "sentToPatrick": true
+      "sentToPatrick": false
     }
   ]
 }
