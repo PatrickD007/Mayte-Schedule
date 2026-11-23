@@ -35,8 +35,16 @@ Rules (see PROJECT_PLAN.md for full context):
   a hand-edited date survives future syncs instead of being silently synced
   back to the feed's real checkout, and a feed disappearance (expected,
   since Airbnb's own checkout already passed) isn't misread as a
-  cancellation. Cleared automatically once the entry settles (see
-  settle_entry) -- found/fixed 2026-10-05, see PROJECT_PLAN.md.
+  cancellation. Found/fixed 2026-10-05, see PROJECT_PLAN.md. Persists
+  indefinitely once set, including through settle_entry -- it used to be
+  cleared there, but settle_entry also fires from mark_sent.py's supersede
+  step, which can settle an entry (clear its stale highlight) before its
+  overridden date has actually arrived; clearing manualDate at that point
+  let the very next sync silently revert the hand-edited date right back
+  to the feed's real checkout, defeating the whole point of the flag
+  (found/fixed 2026-11-23, see PROJECT_PLAN.md). Leaving it set forever is
+  harmless -- once the UID is history, this is equivalent to the normal
+  past-dated skip below anyway.
 
 Two-stage "handled" lifecycle (per Patrick's 2026-09 requests): a `tag` alone
 drives Mayte's own dashboard (the NEW/UPDATE/CANCELLED highlight on her page
@@ -196,13 +204,16 @@ def settle_entry(e: dict, entries: list[dict]) -> None:
     removed from `entries` outright, since it never happened and isn't real
     history the way a completed stay is. Shared by expire_resolved_tags()
     (triggered by the date passing) and mark_sent.py (triggered by a newer
-    confirmation superseding it -- see that script's docstring)."""
+    confirmation superseding it -- see that script's docstring). Does NOT
+    touch `manualDate` -- that flag protects the entry's date field from
+    the feed, a separate concern from whether it's still "news", and the
+    supersede path above can fire well before the overridden date arrives
+    (see the manualDate note up top; found/fixed 2026-11-23)."""
     if e["tag"] == "cancelled":
         entries.remove(e)
     else:
         e["tag"] = None
         e["sentToPatrick"] = False
-        e.pop("manualDate", None)
 
 
 def expire_resolved_tags(entries: list[dict], today: date) -> bool:
