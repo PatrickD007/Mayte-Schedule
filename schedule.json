@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-20T00:00:00Z",
+  "updatedAt": "2026-11-23T00:00:00Z",
   "entries": [
     {
       "id": "2026-09-04-r1",
@@ -418,10 +418,10 @@
       "checkIn": "2026-11-28",
       "kind": "turnover",
       "room": "2",
-      "tag": "new",
+      "tag": null,
       "oldDate": null,
       "icalUid": "1418fb94e984-5e050a8e4fa8b13b88749f0ef3ead04d@airbnb.com",
-      "sentToPatrick": true
+      "sentToPatrick": false
     },
     {
       "id": "2027-02-03-gc",
@@ -441,7 +441,7 @@
       "tag": "new",
       "oldDate": null,
       "icalUid": "1418fb94e984-c9f5eaa31ea28d0c90804bb06cf7aabe@airbnb.com",
-      "sentToPatrick": false
+      "sentToPatrick": true
     }
   ]
 }
